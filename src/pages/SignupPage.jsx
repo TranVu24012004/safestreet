@@ -2,11 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle, UserPlus, CheckCircle, KeyRound } from "lucide-react";
-import emailjs from '@emailjs/browser';
 import { storeOTP, verifyOTP, removeOTP } from "../utils/otpUtils";
-
-// Initialize EmailJS with your public key
-emailjs.init("e2ywgLyBWrbsCxIw9");
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -29,56 +25,6 @@ const SignupPage = () => {
       return () => clearTimeout(timer);
     }
   }, [countdown]);
-
-  // Function to send OTP via email using EmailJS
-  const sendOtpEmail = async (otpCode) => {
-    try {
-      // Log the OTP to the console for debugging
-      console.log(`OTP for ${email}: ${otpCode}`);
-      
-      // Prepare the template parameters with common parameter names
-      const templateParams = {
-        to_name: name,
-        to_email: email,
-        from_name: "SafeStreet App",
-        message: `Your verification code is: ${otpCode}`,
-        subject: "Your Verification Code",
-        otp: otpCode // Add OTP as a separate parameter for template
-      };
-      
-      console.log('Sending email with parameters:', {
-        service_id: 'service_wbi1a36',
-        template_id: 'template_073bu4c',
-        template_params: templateParams
-      });
-      
-      // Send the email using EmailJS
-      const response = await emailjs.send(
-        'service_wbi1a36',    // Your EmailJS service ID
-        'template_073bu4c',   // Your specific OTP template ID
-        templateParams
-      );
-      
-      console.log('Email sent successfully:', response);
-      
-      // Success message for the user
-      setSuccessMessage(`Verification code sent to ${email}. Please check your inbox and spam folder.`);
-      
-      return true;
-    } catch (error) {
-      console.error("Error sending OTP email:", error);
-      
-      // For development/testing, still show the OTP in the UI if email sending fails
-      setSuccessMessage(`Your verification code is:  `);
-
-      // Log detailed error information
-      if (error.status) {
-        console.error(`EmailJS Status: ${error.status}, Text: ${error.text}`);
-      }
-      
-      return true; // Return true to continue the flow even if email fails
-    }
-  };
 
   // Request OTP
   const handleRequestOtp = async (e) => {
@@ -245,24 +191,36 @@ const SignupPage = () => {
     setSuccessMessage("");
 
     try {
-      // Log resend attempt for debugging
-      console.log("Resending OTP locally for:", { email, name });
-      
-      // Generate new OTP locally
-      const otp = storeOTP(email, name, password);
-      console.log("New OTP generated:", otp);
-      
-      // Always show the OTP in the UI for testing
-      setSuccessMessage(`Your new verification code is: ${otp}`);
-      
-      try {
-        // Try to send the OTP via email (this will likely fail, but we'll try anyway)
-        await sendOtpEmail(otp);
-      } catch (emailError) {
-        console.error("Email sending failed, but continuing with OTP flow:", emailError);
-        // Email failed, but we've already shown the OTP in the UI
+      console.log("Resending OTP via backend for:", { email, name });
+
+      const response = await fetch("http://localhost:5000/api/generate-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await response.json();
+      console.log("Resend OTP server response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend OTP");
       }
-      
+
+      if (data.otp) {
+        storeOTP(email, name, password, data.otp);
+      }
+
+      setSuccessMessage(
+        data.emailSent
+          ? `Verification code sent to ${email}. Please check your inbox and spam folder.`
+          : data.otp
+            ? `Email sending failed. Your verification code is: ${data.otp}`
+            : "Verification code generated but email sending failed. Please try again."
+      );
+
       setCountdown(60); // Reset countdown
       setLoading(false);
     } catch (error) {

@@ -1,4 +1,4 @@
-// Import Statements - Essential modules for server functionality
+﻿// Import Statements - Essential modules for server functionality
 import express from "express";                // Imports Express.js framework for creating the web server
 import cors from "cors";                      // Imports CORS middleware to handle cross-origin requests
 import mongoose from "mongoose";              // Imports Mongoose for MongoDB object modeling
@@ -8,16 +8,22 @@ import multer from "multer";                  // Imports multer for handling fil
 import { spawn } from "child_process";        // Imports spawn from child_process to run Python scripts
 import fs from "fs";                          // Imports file system module for file operations
 import path from "path";                      // Imports path module for handling file paths
+import { fileURLToPath } from "url";          // Imports fileURLToPath for ESM directory resolution
 import { Server } from "socket.io";           // Imports Socket.IO server for real-time communication
 import http from "http";                      // Imports HTTP module to create the server
 import nodemailer from "nodemailer";          // Imports nodemailer for sending emails
-// Load environment variables from .env file
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from the backend folder first, then fall back to the repo root.
+dotenv.config({ path: path.resolve(__dirname, ".env"), override: false });
+dotenv.config({ path: path.resolve(__dirname, ".env.production"), override: false });
+dotenv.config({ path: path.resolve(__dirname, "..", ".env"), override: false });
+dotenv.config({ path: path.resolve(__dirname, "..", ".env.production"), override: false });
 
 // Configuration Setup - Server and database settings
 const PORT = process.env.PORT || 5000;        // Sets server port from environment or defaults to 5000
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/Inspectify"; // Sets MongoDB connection string
-const __dirname = path.resolve();             // Gets the current directory path (ES modules don't have __dirname)
 
 // Define storage directories based on environment
 const isProduction = process.env.NODE_ENV === 'production'; // Checks if running in production
@@ -110,19 +116,19 @@ app.get('/socket-test', (req, res) => {       // Endpoint to serve a Socket.IO t
 mongoose
   .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }) // Connects to MongoDB
   .then(() => {
-    console.log("✅ MongoDB connected");
+    console.log("âœ… MongoDB connected");
     
     // Create geospatial index on FinalImage collection after connection
     mongoose.connection.useDb("Safestreet").collection("final_img").createIndex(
       { "location": "2dsphere" },             // Creates a geospatial index for location queries
       { background: true }                    // Creates index in the background
     ).then(() => {
-      console.log("✅ Geospatial index created on final_img collection");
+      console.log("âœ… Geospatial index created on final_img collection");
     }).catch(err => {
-      console.error("❌ Error creating geospatial index:", err);
+      console.error("âŒ Error creating geospatial index:", err);
     });
   })
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .catch((err) => console.error("âŒ MongoDB connection error:", err));
 
 // Database References - Get references to database and collections
 const db = mongoose.connection.useDb("Safestreet"); // Uses the Safestreet database
@@ -252,7 +258,7 @@ const validateUserType = (userId) => {
 
 // Socket.IO Connection Handling - Manage real-time connections with clients
 io.on("connection", (socket) => {             // Handles new socket connections
-  console.log("🟢 WebSocket client connected:", socket.id);
+  console.log("ðŸŸ¢ WebSocket client connected:", socket.id);
   
   // Set a connection timeout if not authenticated within 30 seconds
   const authTimeout = setTimeout(() => {
@@ -334,7 +340,7 @@ io.on("connection", (socket) => {             // Handles new socket connections
   });
   
   socket.on("disconnect", (reason) => {       // Handles socket disconnections
-    console.log(`🔴 Client disconnected: ${socket.id}, Reason: ${reason}`);
+    console.log(`ðŸ”´ Client disconnected: ${socket.id}, Reason: ${reason}`);
     // Remove user from tracking when they disconnect
     if (socket.userId) {
       console.log(`Removing user ${socket.userId} (${socket.userType}) from connected users`);
@@ -514,7 +520,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     console.log("File:", req.file ? req.file.originalname : "NO FILE");
 
     if (!req.file) {
-      console.error("❌ No file received");
+      console.error("âŒ No file received");
       return res.status(400).json({ error: "No image file received!" });
     }
 
@@ -525,14 +531,14 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     try {
       console.log("Saving temp image...");
       fs.writeFileSync(tempImagePath, req.file.buffer);
-      console.log(`✅ Temp image saved: ${tempImagePath}`);
+      console.log(`âœ… Temp image saved: ${tempImagePath}`);
     } catch (err) {
-      console.error("❌ Error saving temp image:", err.message);
+      console.error("âŒ Error saving temp image:", err.message);
       return res.status(500).json({ error: "Failed to save temporary image" });
     }
 
     // ===== PYTHON CONFIG =====
-    const pythonExecutable = "python3"; // FIX CỨNG
+    const pythonExecutable = "python3"; // FIX Cá»¨NG
     const pythonScriptPath = path.join(__dirname, "models", "predict.py");
 
     console.log("Python executable:", pythonExecutable);
@@ -540,7 +546,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
     console.log("Image path:", tempImagePath);
 
     // ===== RUN PYTHON =====
-    console.log("🚀 Spawning Python process...");
+    console.log("ðŸš€ Spawning Python process...");
     const pythonProcess = spawn(pythonExecutable, [
       pythonScriptPath,
       tempImagePath,
@@ -550,13 +556,13 @@ app.post("/predict", upload.single("image"), async (req, res) => {
 
     // ===== STDOUT =====
     pythonProcess.stdout.on("data", (data) => {
-      console.log("📤 PYTHON STDOUT:", data.toString());
+      console.log("ðŸ“¤ PYTHON STDOUT:", data.toString());
       predictionResult += data.toString();
     });
 
-    // ===== STDERR (QUAN TRỌNG NHẤT) =====
+    // ===== STDERR (QUAN TRá»ŒNG NHáº¤T) =====
     pythonProcess.stderr.on("data", (data) => {
-      console.error("🔥 PYTHON ERROR:", data.toString());
+      console.error("ðŸ”¥ PYTHON ERROR:", data.toString());
     });
 
     // ===== CLOSE =====
@@ -568,14 +574,14 @@ app.post("/predict", upload.single("image"), async (req, res) => {
       try {
         if (fs.existsSync(tempImagePath)) {
           fs.unlinkSync(tempImagePath);
-          console.log(`🧹 Temp image deleted: ${tempImagePath}`);
+          console.log(`ðŸ§¹ Temp image deleted: ${tempImagePath}`);
         }
       } catch (err) {
-        console.warn("⚠️ Cannot delete temp file:", err.message);
+        console.warn("âš ï¸ Cannot delete temp file:", err.message);
       }
 
       if (code !== 0) {
-        console.error("❌ Python process failed");
+        console.error("âŒ Python process failed");
         return res.status(500).json({ error: "Prediction process failed" });
       }
 
@@ -597,8 +603,8 @@ app.post("/predict", upload.single("image"), async (req, res) => {
         }
       }
 
-      console.log("🎯 Final result:", result);
-      console.log("📊 Confidence:", confidence);
+      console.log("ðŸŽ¯ Final result:", result);
+      console.log("ðŸ“Š Confidence:", confidence);
 
       let savedImagePath = null;
 
@@ -612,14 +618,14 @@ app.post("/predict", upload.single("image"), async (req, res) => {
 
         try {
           fs.writeFileSync(fullSavedPath, req.file.buffer);
-          console.log(`✅ Image saved: ${fullSavedPath}`);
+          console.log(`âœ… Image saved: ${fullSavedPath}`);
         } catch (err) {
-          console.error("❌ Error saving image:", err.message);
+          console.error("âŒ Error saving image:", err.message);
           return res.status(500).json({ error: "Failed to save image" });
         }
 
         if (!userId) {
-          console.error("❌ Missing userId");
+          console.error("âŒ Missing userId");
           return res
             .status(400)
             .json({ error: "User ID is required for image uploads" });
@@ -634,7 +640,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
         });
 
         await entry.save();
-        console.log("✅ Saved to DB");
+        console.log("âœ… Saved to DB");
       }
 
       // ===== RESPONSE =====
@@ -645,7 +651,7 @@ app.post("/predict", upload.single("image"), async (req, res) => {
       });
     });
   } catch (error) {
-    console.error("💥 SERVER ERROR:", error);
+    console.error("ðŸ’¥ SERVER ERROR:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -1043,23 +1049,81 @@ app.patch("/api/feedbacks/:id", async (req, res) => {
 });
 
 // --- /api/feedbacks/:id/reply ---
+const EMAIL_USER = process.env.EMAIL_USER || process.env.EMAIL_FROM || "";
+const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD || "";
+const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USER;
+
+if (!EMAIL_USER || !EMAIL_PASS) {
+  console.warn(
+    "Email configuration is incomplete. Set EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in .env."
+  );
+}
+
 // Create a nodemailer transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
+  service: "gmail",
+  host: "smtp.gmail.com",
   port: 465,
   secure: true,
   auth: {
-    user: 'venkatmadhu232@gmail.com',
-    pass: process.env.EMAIL_PASSWORD // Using password from .env file (VENKAT1551971)
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
   },
-  // Debug options to help troubleshoot email issues
-  debug: true,
-  logger: true,
-  // Debug options to help troubleshoot email issues
-  debug: true,
-  logger: true
+  debug: process.env.NODE_ENV !== "production",
+  logger: process.env.NODE_ENV !== "production",
 });
+
+const sendOtpEmail = async ({ email, name, otp }) => {
+  const mailOptions = {
+    from: `"Inspectify" <${EMAIL_FROM}>`,
+    to: email,
+    subject: "Your Inspectify Verification Code",
+    html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Inspectify Verification</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc; color: #333333;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
+          <tr>
+            <td align="center" bgcolor="#4F46E5" style="padding: 30px 0;">
+              <img src="https://i.ibb.co/Qj1bLqp/road-logo.png" alt="Inspectify Logo" width="60" style="display: block;">
+              <h1 style="color: #ffffff; font-weight: 700; margin: 10px 0 0; font-size: 24px;">Inspectify</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <h2 style="margin: 0 0 20px; color: #333333; font-weight: 600;">Verify Your Email Address</h2>
+              <p style="margin: 0 0 25px; color: #555555; line-height: 1.6; font-size: 16px;">Hello ${name || "User"},</p>
+              <p style="margin: 0 0 25px; color: #555555; line-height: 1.6; font-size: 16px;">Thank you for signing up with Inspectify. To complete your registration, please use the verification code below:</p>
+              <div style="background: linear-gradient(to right, #4F46E5, #6366F1); border-radius: 8px; padding: 5px; margin: 30px 0;">
+                <div style="background-color: #ffffff; border-radius: 4px; padding: 20px; text-align: center;">
+                  <h2 style="margin: 0 0 10px; color: #4F46E5; font-size: 16px; font-weight: 600;">Your Verification Code</h2>
+                  <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #333333; margin: 15px 0;">${otp}</div>
+                  <p style="margin: 10px 0 0; color: #888888; font-size: 14px;">This code will expire in 10 minutes</p>
+                </div>
+              </div>
+              <p style="margin: 25px 0; color: #555555; line-height: 1.6; font-size: 16px;">If you didn't request this code, you can safely ignore this email.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e5e7eb;">
+              <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px; text-align: center;">Inspectify - Road Damage Detection & Reporting</p>
+              <p style="margin: 0; color: #6b7280; font-size: 14px; text-align: center;">&copy; ${new Date().getFullYear()} Inspectify. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `,
+    text: `Hello ${name || "User"},\n\nThank you for signing up with Inspectify. Here's your verification code: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nInspectify - Road Damage Detection & Reporting\n© ${new Date().getFullYear()} Inspectify. All rights reserved.`,
+  };
+
+  return transporter.sendMail(mailOptions);
+};
 
 app.post("/api/feedbacks/:id/reply", async (req, res) => {
   try {
@@ -1073,7 +1137,7 @@ app.post("/api/feedbacks/:id/reply", async (req, res) => {
     
     // Prepare email options
     const mailOptions = {
-      from: '"Inspectify" <venkatmadhu232@gmail.com>',
+      from: `"Inspectify" <${EMAIL_FROM}>`,
       to: recipientEmail,
       subject: `Re: ${feedback.subject || 'Your Feedback'}`,
       html: `
@@ -1099,7 +1163,7 @@ app.post("/api/feedbacks/:id/reply", async (req, res) => {
     feedback.replyDate = new Date();
     await feedback.save();
     
-    console.log(`Reply sent to ${recipientName} (${recipientEmail}) from ${senderEmail || 'venkatmadhu232@gmail.com'}`);
+    console.log(`Reply sent to ${recipientName} (${recipientEmail}) from ${senderEmail || EMAIL_FROM || 'Inspectify'}`);
     
     // Send WebSocket notification to the user if userId is provided
     if (userId && feedback.userId) {
@@ -1196,146 +1260,49 @@ const generateOTP = () => {
 app.post("/api/generate-otp", async (req, res) => {
   try {
     console.log("Received generate-otp request:", req.body);
-    
+
     const { email, name, password } = req.body;
-    
+
     if (!email) {
       console.log("Missing email in generate-otp request");
       return res.status(400).json({ error: "Email is required" });
     }
-    
-    // Check if user already exists
+
     const existingUser = await loginCollection.findOne({ email });
     if (existingUser) {
       console.log(`User with email ${email} already exists`);
       return res.status(400).json({ error: "User already exists!" });
     }
-    
-    // Generate a new OTP
+
     const otp = generateOTP();
-    
-    // Store OTP with 10-minute expiration
     otpStore.set(email, {
       otp,
       name,
-      password, // Store password for later use in verification
-      expires: Date.now() + 10 * 60 * 1000, // 10 minutes
+      password,
+      expires: Date.now() + 10 * 60 * 1000,
     });
-    
+
     console.log(`Generated OTP for ${email}: ${otp}`);
-    logOtpStore(); // Log the current state of the OTP store
-    
-    // Send OTP via email
-    try {
-      console.log("Attempting to send OTP email to:", email);
-      
-      // Prepare email options with professional design
-      const mailOptions = {
-        from: '"Inspectify" <venkatmadhu232@gmail.com>',
-        to: email,
-        subject: 'Your Inspectify Verification Code',
-        html: `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Inspectify Verification</title>
-          </head>
-          <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f7f9fc; color: #333333;">
-            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
-              <!-- Header -->
-              <tr>
-                <td align="center" bgcolor="#4F46E5" style="padding: 30px 0;">
-                  <img src="https://i.ibb.co/Qj1bLqp/road-logo.png" alt="Inspectify Logo" width="60" style="display: block;">
-                  <h1 style="color: #ffffff; font-weight: 700; margin: 10px 0 0; font-size: 24px;">Inspectify</h1>
-                </td>
-              </tr>
-              
-              <!-- Content -->
-              <tr>
-                <td style="padding: 40px 30px;">
-                  <h2 style="margin: 0 0 20px; color: #333333; font-weight: 600;">Verify Your Email Address</h2>
-                  <p style="margin: 0 0 25px; color: #555555; line-height: 1.6; font-size: 16px;">Hello ${name || 'User'},</p>
-                  <p style="margin: 0 0 25px; color: #555555; line-height: 1.6; font-size: 16px;">Thank you for signing up with Inspectify. To complete your registration, please use the verification code below:</p>
-                  
-                  <!-- OTP Box -->
-                  <div style="background: linear-gradient(to right, #4F46E5, #6366F1); border-radius: 8px; padding: 5px; margin: 30px 0;">
-                    <div style="background-color: #ffffff; border-radius: 4px; padding: 20px; text-align: center;">
-                      <h2 style="margin: 0 0 10px; color: #4F46E5; font-size: 16px; font-weight: 600;">Your Verification Code</h2>
-                      <div style="font-size: 32px; letter-spacing: 8px; font-weight: 700; color: #333333; margin: 15px 0;">${otp}</div>
-                      <p style="margin: 10px 0 0; color: #888888; font-size: 14px;">This code will expire in 10 minutes</p>
-                    </div>
-                  </div>
-                  
-                  <p style="margin: 25px 0; color: #555555; line-height: 1.6; font-size: 16px;">If you didn't request this code, you can safely ignore this email. Someone might have entered your email address by mistake.</p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e5e7eb;">
-                  <p style="margin: 0 0 15px; color: #6b7280; font-size: 14px; text-align: center;">Inspectify - Road Damage Detection & Reporting</p>
-                  <p style="margin: 0; color: #6b7280; font-size: 14px; text-align: center;">© ${new Date().getFullYear()} Inspectify. All rights reserved.</p>
-                  
-                  <!-- Social Media Icons -->
-                  <div style="margin-top: 20px; text-align: center;">
-                    <a href="#" style="display: inline-block; margin: 0 8px;"><img src="https://i.ibb.co/vxbFJPt/facebook.png" alt="Facebook" width="24" height="24"></a>
-                    <a href="#" style="display: inline-block; margin: 0 8px;"><img src="https://i.ibb.co/JtmYVXZ/twitter.png" alt="Twitter" width="24" height="24"></a>
-                    <a href="#" style="display: inline-block; margin: 0 8px;"><img src="https://i.ibb.co/0qsXY0V/instagram.png" alt="Instagram" width="24" height="24"></a>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            
-            <!-- Additional Information -->
-            <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 20px auto 0;">
-              <tr>
-                <td style="padding: 0 30px; text-align: center; color: #6b7280; font-size: 12px;">
-                  <p>This is an automated email. Please do not reply to this message.</p>
-                  <p>If you have any questions, please contact our <a href="#" style="color: #4F46E5; text-decoration: none;">support team</a>.</p>
-                </td>
-              </tr>
-            </table>
-          </body>
-          </html>
-        `,
-        // Add text alternative for email clients that don't support HTML
-        text: `Hello ${name || 'User'},\n\nThank you for signing up with Inspectify. Here's your verification code: ${otp}\n\nThis code will expire in 10 minutes.\n\nIf you didn't request this code, please ignore this email.\n\nInspectify - Road Damage Detection & Reporting\n© ${new Date().getFullYear()} Inspectify. All rights reserved.`
-      };
-      
-      // Send the email
-      await transporter.sendMail(mailOptions);
-      console.log(`OTP email sent to ${email}`);
-      
-      const response = { 
-        message: "OTP sent to your email",
-        emailSent: true
-      };
-      
-      // For development, also return the OTP in the response
-      if (process.env.NODE_ENV !== 'production') {
-        response.otp = otp;
-      }
-      
-      console.log("Sending response:", response);
-      res.status(200).json(response);
-    } catch (emailError) {
-      console.error("Error sending OTP email:", emailError);
-      
-      // If email sending fails, still return the OTP for development
-      const response = { 
-        message: "Failed to send OTP email, but OTP generated successfully",
-        emailSent: false,
-        otp: otp // In production, handle this differently
-      };
-      
-      console.log("Sending response with email failure:", response);
-      res.status(200).json(response);
+    logOtpStore();
+
+    console.log("Attempting to send OTP email to:", email);
+    await sendOtpEmail({ email, name, otp });
+    console.log(`OTP email sent to ${email}`);
+
+    const response = {
+      message: "OTP sent to your email",
+      emailSent: true,
+    };
+
+    if (process.env.NODE_ENV !== "production") {
+      response.otp = otp;
     }
+
+    console.log("Sending response:", response);
+    res.status(200).json(response);
   } catch (error) {
     console.error("OTP generation error:", error);
-    res.status(500).json({ error: "Server error during OTP generation" });
+    res.status(500).json({ error: `Server error during OTP generation: ${error.message}` });
   }
 });
 
@@ -1466,43 +1433,44 @@ app.post("/api/signup", async (req, res) => {
 app.post("/api/signup-with-otp", async (req, res) => {
   try {
     console.log("Received signup-with-otp request:", req.body);
-    
+
     const { name, email, password } = req.body;
-    
-    // Validate required fields
+
     if (!name || !email || !password) {
       console.log("Missing required fields");
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    // Check if user already exists
     const existingUser = await loginCollection.findOne({ email });
     if (existingUser) {
       console.log(`User with email ${email} already exists`);
       return res.status(400).json({ error: "User already exists!" });
     }
-    
-    // Generate OTP
+
     const otp = generateOTP();
-    
-    // Store OTP with 10-minute expiration
     otpStore.set(email, {
       otp,
       name,
-      password, // Store password for later use in verification
-      expires: Date.now() + 10 * 60 * 1000, // 10 minutes
+      password,
+      expires: Date.now() + 10 * 60 * 1000,
     });
-    
+
     console.log(`Generated OTP for ${email}: ${otp}`);
-    logOtpStore(); // Log the current state of the OTP store
-    
-    // In a real application, you would send this via email
-    // For this demo, we'll just return it in the response (not secure for production)
-    const response = { 
+    logOtpStore();
+
+    console.log("Attempting to send OTP email to:", email);
+    await sendOtpEmail({ email, name, otp });
+    console.log(`OTP email sent to ${email}`);
+
+    const response = {
       message: "OTP sent to your email",
-      otp: otp // In production, remove this and only send via email
+      emailSent: true,
     };
-    
+
+    if (process.env.NODE_ENV !== "production") {
+      response.otp = otp;
+    }
+
     console.log("Sending response:", response);
     res.status(200).json(response);
   } catch (error) {
@@ -1510,7 +1478,7 @@ app.post("/api/signup-with-otp", async (req, res) => {
     res.status(500).json({ error: "Server error during OTP generation" });
   }
 });
- 
+
 // --- /api/login ---
 app.post("/api/login", async (req, res) => {
   try {
@@ -1524,7 +1492,7 @@ app.post("/api/login", async (req, res) => {
         message: "Admin login successful!",
         userId: adminId,
         name: "Administrator",
-        role: "admin" // <-- Trả về quyền Admin chuẩn
+        role: "admin" // <-- Tráº£ vá» quyá»n Admin chuáº©n
       });
     }
     
@@ -1544,7 +1512,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(401).json({ error: "Error verifying credentials" });
     }
 
-    // ĐỌC QUYỀN TÀI KHOẢN (Hỗ trợ cả dữ liệu cũ dùng isAdmin)
+    // Äá»ŒC QUYá»€N TÃ€I KHOáº¢N (Há»— trá»£ cáº£ dá»¯ liá»‡u cÅ© dÃ¹ng isAdmin)
     const userRole = user.role || (user.isAdmin ? 'admin' : 'citizen');
     const isAdminAccount = userRole === 'admin' || userRole === 'authority';
     
@@ -1560,20 +1528,20 @@ app.post("/api/login", async (req, res) => {
       message: "Login successful!", 
       userId: userId,
       name: user.name || email.split('@')[0],
-      role: userRole // <-- TRẢ VỀ ROLE MỚI CHO FRONTEND
+      role: userRole // <-- TRáº¢ Vá»€ ROLE Má»šI CHO FRONTEND
     });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: "Server error during login" });
   }
 });
-// --- /api/users (API MỚI CHO TRANG QUẢN LÝ TÀI KHOẢN) ---
+// --- /api/users (API Má»šI CHO TRANG QUáº¢N LÃ TÃ€I KHOáº¢N) ---
 app.get("/api/users", async (req, res) => {
   try {
-    // Truy vấn tất cả tài khoản, loại bỏ trường password để bảo mật
+    // Truy váº¥n táº¥t cáº£ tÃ i khoáº£n, loáº¡i bá» trÆ°á»ng password Ä‘á»ƒ báº£o máº­t
     const users = await loginCollection.find({}, { projection: { password: 0 } }).toArray();
     
-    // Format lại dữ liệu để đảm bảo các tài khoản cũ hiển thị đúng role
+    // Format láº¡i dá»¯ liá»‡u Ä‘á»ƒ Ä‘áº£m báº£o cÃ¡c tÃ i khoáº£n cÅ© hiá»ƒn thá»‹ Ä‘Ãºng role
     const formattedUsers = users.map(user => ({
       ...user,
       role: user.role || (user.isAdmin ? 'admin' : 'citizen')
@@ -1582,7 +1550,7 @@ app.get("/api/users", async (req, res) => {
     res.status(200).json(formattedUsers);
   } catch (error) {
     console.error("Error fetching users:", error);
-    res.status(500).json({ error: "Lỗi server khi lấy danh sách tài khoản" });
+    res.status(500).json({ error: "Lá»—i server khi láº¥y danh sÃ¡ch tÃ i khoáº£n" });
   }
 });
 
@@ -2457,20 +2425,20 @@ app.post("/api/review-image-v2", async (req, res) => {
     res.status(500).json({ error: "Server error during image review" });
   }
 });
-// Thêm vào BACKEND/server.js
+// ThÃªm vÃ o BACKEND/server.js
 
-// // Lấy danh sách toàn bộ người dùng (Cần bọc thêm middleware kiểm tra quyền Admin nếu có)
+// // Láº¥y danh sÃ¡ch toÃ n bá»™ ngÆ°á»i dÃ¹ng (Cáº§n bá»c thÃªm middleware kiá»ƒm tra quyá»n Admin náº¿u cÃ³)
 // app.get('/api/users', async (req, res) => {
 //   try {
-//     // Giả định model User đã được import: const User = require('./models/user');
-//     const users = await User.find({}, '-password'); // Bỏ qua field mật khẩu
+//     // Giáº£ Ä‘á»‹nh model User Ä‘Ã£ Ä‘Æ°á»£c import: const User = require('./models/user');
+//     const users = await User.find({}, '-password'); // Bá» qua field máº­t kháº©u
 //     res.json(users);
 //   } catch (err) {
-//     res.status(500).json({ error: 'Lỗi server khi lấy danh sách người dùng' });
+//     res.status(500).json({ error: 'Lá»—i server khi láº¥y danh sÃ¡ch ngÆ°á»i dÃ¹ng' });
 //   }
 // });
 
-// --- Cập nhật phân quyền người dùng ---
+// --- Cáº­p nháº­t phÃ¢n quyá»n ngÆ°á»i dÃ¹ng ---
 app.put('/api/users/:id/role', async (req, res) => {
   try {
     const { role } = req.body;
@@ -2479,26 +2447,26 @@ app.put('/api/users/:id/role', async (req, res) => {
       { $set: { role } }
     );
     
-    if (result.matchedCount === 0) return res.status(404).json({ error: 'Không tìm thấy người dùng' });
-    res.json({ message: 'Cập nhật phân quyền thành công' });
+    if (result.matchedCount === 0) return res.status(404).json({ error: 'KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng' });
+    res.json({ message: 'Cáº­p nháº­t phÃ¢n quyá»n thÃ nh cÃ´ng' });
   } catch (err) {
-    console.error("Lỗi cập nhật quyền:", err);
-    res.status(500).json({ error: 'Lỗi server khi cập nhật quyền' });
+    console.error("Lá»—i cáº­p nháº­t quyá»n:", err);
+    res.status(500).json({ error: 'Lá»—i server khi cáº­p nháº­t quyá»n' });
   }
 });
 
-// --- Xóa tài khoản ---
+// --- XÃ³a tÃ i khoáº£n ---
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const result = await loginCollection.deleteOne(
       { _id: new mongoose.Types.ObjectId(req.params.id) }
     );
     
-    if (result.deletedCount === 0) return res.status(404).json({ error: 'Không tìm thấy người dùng' });
-    res.json({ message: 'Đã xóa tài khoản thành công' });
+    if (result.deletedCount === 0) return res.status(404).json({ error: 'KhÃ´ng tÃ¬m tháº¥y ngÆ°á»i dÃ¹ng' });
+    res.json({ message: 'ÄÃ£ xÃ³a tÃ i khoáº£n thÃ nh cÃ´ng' });
   } catch (err) {
-    console.error("Lỗi xóa tài khoản:", err);
-    res.status(500).json({ error: 'Lỗi server khi xóa người dùng' });
+    console.error("Lá»—i xÃ³a tÃ i khoáº£n:", err);
+    res.status(500).json({ error: 'Lá»—i server khi xÃ³a ngÆ°á»i dÃ¹ng' });
   }
 });
 
@@ -2506,3 +2474,4 @@ app.delete('/api/users/:id', async (req, res) => {
 server.listen(PORT, () => {
   console.log(` Server is running at http://localhost:${PORT}`);
 });
+

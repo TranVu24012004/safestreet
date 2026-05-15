@@ -10,8 +10,7 @@ export const generateOTP = () => {
 };
 
 // Store an OTP with expiration
-export const storeOTP = (email, name, password) => {
-  const otp = generateOTP();
+export const storeOTP = (email, name, password, otp = generateOTP()) => {
   
   // Store OTP with 10-minute expiration
   otpStore.set(email, {
