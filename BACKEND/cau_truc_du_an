@@ -1,0 +1,98 @@
+SafeStreet---Road-Damage-Detection-System_2/
+│
+├── src/
+│   ├── App.css
+│   ├── App.jsx
+│   ├── index.css
+│   ├── main.jsx
+│   ├── components/
+│   │   ├── Button.jsx
+│   │   ├── Camera.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── Features.jsx
+│   │   ├── Footer.jsx
+│   │   ├── Get.jsx
+│   │   ├── Hero.jsx
+│   │   ├── HowItWorks.jsx
+│   │   ├── MyMap.jsx
+│   │   ├── Navbar.css
+│   │   ├── Navbar.jsx
+│   │   ├── RoadIssueMap.jsx
+│   │   ├── Sidebar.jsx
+│   │   ├── SimpleLoader.jsx
+│   │   ├── StyledButton.jsx
+│   │   ├── Testimonials.jsx
+│   │   ├── UserLocationMap.jsx
+│   │   └── loading.jsx
+│   ├── pages/
+│   │   ├── AboutUs.jsx
+│   │   ├── Admin.jsx
+│   │   ├── AuthorityPage.jsx
+│   │   ├── Capture.jsx
+│   │   ├── Contact.jsx
+│   │   ├── Demo.jsx
+│   │   ├── LoginPage.jsx
+│   │   ├── MapView.jsx
+│   │   ├── Report.jsx
+│   │   ├── SignupPage.jsx
+│   │   ├── Upload.jsx
+│   │   ├── ViewFeed.css
+│   │   ├── ViewFeed.jsx
+│   │   └── user.jsx
+│   ├── utils/
+│   │   ├── apiConfig.js
+│   │   ├── apiHelper.js
+│   │   ├── darkModeUtils.js
+│   │   ├── fixLocalStorageUrls.js
+│   │   ├── otpUtils.js
+│   │   └── updateApiUrls.js
+│
+├── public/
+│   └── convert-svg-to-png.html
+│
+├── BACKEND/
+│   ├── api/
+│   │   └── test.js
+│   ├── models/
+│   │   ├── Feedback.js
+│   │   ├── RoadEntry.js
+│   │   ├── detect.py
+│   │   ├── predict.py
+│   │   ├── user.js
+│   │   ├── best.pt
+│   │   ├── best1.pt
+│   │   ├── best1_text.pt
+│   │   ├── best_text.pt
+│   │   ├── best_vit_multi_label.pth
+│   │   ├── best_vit_multi_label_text.pth
+│   │   ├── lyte.pth
+│   │   ├── lyte_text.pth
+│   │   ├── road.pth
+│   │   ├── road_text.pth
+│   │   └── yolov8m.pt
+│   ├── uploads/
+│   ├── final/
+│   ├── outputs/
+│   ├── temp/
+│   ├── create-admin.js
+│   ├── create-admin-cjs.js
+│   ├── huggingface_integration.py
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── requirements.txt
+│   ├── server.js
+│   ├── .env
+│   ├── .env.production
+│   └── .evn
+│
+├── temp_hf/
+│   ├── safestreet-road-classifier/
+│   ├── safestreet-vit/
+│   └── safestreet-yolo/
+│
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── README.md
+└── vite.config.js

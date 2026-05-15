@@ -1,0 +1,12 @@
+ *.pth
+*.pt
+*.h5
+*.ckpt
+*.zip
+*.tar.gz
+__pycache__/
+.ipynb_checkpoints/
+node_modules/
+.env
+drive/
+
