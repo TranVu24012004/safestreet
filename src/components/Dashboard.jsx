@@ -414,6 +414,31 @@ const Dashboard = ({ activeTab }) => {
     return notification;
   };
 
+  const normalizeReviewStatus = (value) => {
+    if (!value) return 'pending';
+    const status = String(value).toLowerCase();
+    if (status === 'approved' || status === 'rejected' || status === 'pending' || status === 'in-progress') {
+      return status;
+    }
+    return 'pending';
+  };
+
+  const calculateRoadStatsFromNotifications = (items) => {
+    const approved = items.filter(n => normalizeReviewStatus(n.details?.status) === 'approved').length;
+    const pending = items.filter(n => {
+      const status = normalizeReviewStatus(n.details?.status);
+      return status === 'pending' || status === 'in-progress';
+    }).length;
+    const completed = items.filter(n => {
+      const status = normalizeReviewStatus(n.details?.status);
+      const action = String(n.details?.action || '').toLowerCase();
+      return status === 'approved' && action.includes('repair');
+    }).length;
+    const rejected = items.filter(n => normalizeReviewStatus(n.details?.status) === 'rejected').length;
+
+    return { approved, pending, completed, rejected };
+  };
+
   // Function to add a new notification
   const addNotification = (notification) => {
     const newNotification = validateNotification({
@@ -499,23 +524,7 @@ const Dashboard = ({ activeTab }) => {
       
       // Only update statistics if we have notifications and haven't already fetched from API
       if (notifications.length > 0 && !statsLoading) {
-        // Calculate road statistics from notifications
-        const approved = notifications.filter(n => 
-          n.details && n.details.status === 'approved'
-        ).length;
-        
-        const pending = notifications.filter(n => 
-          n.details && (n.details.status === 'pending' || n.details.status === 'in-progress')
-        ).length;
-        
-        const completed = notifications.filter(n => 
-          n.details && n.details.action && n.details.action.toLowerCase().includes('repair') && 
-          n.details.status === 'approved'
-        ).length;
-        
-        const rejected = notifications.filter(n => 
-          n.details && n.details.status === 'rejected'
-        ).length;
+        const { approved, pending, completed, rejected } = calculateRoadStatsFromNotifications(notifications);
         
         // Only update if we have at least one non-zero value to prevent resetting
         if (approved > 0 || pending > 0 || completed > 0 || rejected > 0) {
@@ -598,10 +607,24 @@ const Dashboard = ({ activeTab }) => {
       
       if (response.ok) {
         const data = await response.json();
+        const apiStats = data?.reviewStatusDistribution
+          ? {
+              approved: data.reviewStatusDistribution.approved || 0,
+              pending: data.reviewStatusDistribution.pending || 0,
+              completed: data.reviewStatusDistribution.inProgress || 0,
+              rejected: data.reviewStatusDistribution.rejected || 0
+            }
+          : {
+              approved: data?.approved || 0,
+              pending: data?.pending || 0,
+              completed: data?.completed || 0,
+              rejected: data?.rejected || 0
+            };
+
         // Only update if we have valid data with at least one non-zero value
-        if (data && (data.approved > 0 || data.pending > 0 || data.completed > 0 || data.rejected > 0)) {
-          newStats = data;
-          setRoadStats(data);
+        if (apiStats.approved > 0 || apiStats.pending > 0 || apiStats.completed > 0 || apiStats.rejected > 0) {
+          newStats = apiStats;
+          setRoadStats(apiStats);
         }
       } else {
         console.log('Using calculated stats from notifications');
@@ -617,23 +640,7 @@ const Dashboard = ({ activeTab }) => {
           };
           setRoadStats(newStats);
         } else {
-          // Calculate stats from notifications
-          const approved = notifications.filter(n => 
-            n.details && n.details.status === 'approved'
-          ).length;
-          
-          const pending = notifications.filter(n => 
-            n.details && (n.details.status === 'pending' || n.details.status === 'in-progress')
-          ).length;
-          
-          const completed = notifications.filter(n => 
-            n.details && n.details.action && n.details.action.toLowerCase().includes('repair') && 
-            n.details.status === 'approved'
-          ).length;
-          
-          const rejected = notifications.filter(n => 
-            n.details && n.details.status === 'rejected'
-          ).length;
+          const { approved, pending, completed, rejected } = calculateRoadStatsFromNotifications(notifications);
           
           // Only update if we have at least one non-zero value
           if (approved > 0 || pending > 0 || completed > 0 || rejected > 0) {

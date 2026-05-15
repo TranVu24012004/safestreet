@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 import UserLocationMap from "../components/UserLocationMap";
 import Sidebar from "../components/Sidebar";
+import { BACKEND_URL } from "../utils/apiConfig";
 import {
   RadialBarChart,
   RadialBar,
@@ -98,7 +99,7 @@ const Admin = () => {
     
     // Verify with server if needed (for non-prefix admin users)
     if (!storedUserId.startsWith('admin_')) {
-      fetch('http://localhost:5000/api/verify-auth', {
+      fetch(`${BACKEND_URL}/api/verify-auth`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: storedUserId })
@@ -130,7 +131,7 @@ const Admin = () => {
     
     // Import socket.io-client dynamically
     import('socket.io-client').then(({ io }) => {
-      const socket = io('http://localhost:5000', {
+      const socket = io(BACKEND_URL, {
         transports: ['websocket', 'polling']
       });
       
@@ -168,6 +169,7 @@ const Admin = () => {
     pending: 0,
     reviewed: 0
   });
+  const [userCount, setUserCount] = useState(0);
   const [weeklyReportData, setWeeklyReportData] = useState([]);
   const [damageTypeData, setDamageTypeData] = useState([]);
   const [severityData, setSeverityData] = useState([]);
@@ -190,25 +192,20 @@ const Admin = () => {
         // Only fetch stats for the current user if not an admin
         const isAdmin = userId.startsWith('admin_');
         const url = isAdmin 
-          ? "http://localhost:5000/report-stats" // Admin sees all stats
-          : `http://localhost:5000/api/report-stats?userId=${userId}`; // Regular users see only their stats
+          ? `${BACKEND_URL}/api/report-stats` 
+          : `${BACKEND_URL}/api/report-stats?userId=${userId}`;
         
         const response = await fetch(url);
         if (response.ok) {
           const stats = await response.json();
           setReportStats(stats);
         } else {
-          // If API not available, use mock data
-          console.warn("API not available, using mock data for report stats");
-          const mockStats = isAdmin 
-            ? { total: 120, pending: 35, reviewed: 85 } 
-            : { total: 8, pending: 3, reviewed: 5 };
-          setReportStats(mockStats);
+          console.warn("Failed to load report stats from API");
+          setReportStats({ total: 0, pending: 0, reviewed: 0 });
         }
       } catch (error) {
         console.error("Error fetching report stats:", error);
-        // Fallback to mock data
-        setReportStats({ total: 8, pending: 3, reviewed: 5 });
+        setReportStats({ total: 0, pending: 0, reviewed: 0 });
       } finally {
         setLoading(prev => ({ ...prev, stats: false }));
       }
@@ -221,36 +218,20 @@ const Admin = () => {
       try {
         const isAdmin = userId.startsWith('admin_');
         const url = isAdmin 
-          ? "http://localhost:5000/api/weekly-reports" 
-          : `http://localhost:5000/api/weekly-reports?userId=${userId}`;
+          ? `${BACKEND_URL}/api/weekly-reports` 
+          : `${BACKEND_URL}/api/weekly-reports?userId=${userId}`;
         
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setWeeklyReportData(data);
         } else {
-          console.warn("API not available, using mock data for weekly reports");
-          setWeeklyReportData([
-            { name: 'Mon', reports: 4 },
-            { name: 'Tue', reports: 7 },
-            { name: 'Wed', reports: 5 },
-            { name: 'Thu', reports: 8 },
-            { name: 'Fri', reports: 12 },
-            { name: 'Sat', reports: 6 },
-            { name: 'Sun', reports: 3 },
-          ]);
+          console.warn("Failed to load weekly reports from API");
+          setWeeklyReportData([]);
         }
       } catch (error) {
         console.error("Error fetching weekly reports:", error);
-        setWeeklyReportData([
-          { name: 'Mon', reports: 4 },
-          { name: 'Tue', reports: 7 },
-          { name: 'Wed', reports: 5 },
-          { name: 'Thu', reports: 8 },
-          { name: 'Fri', reports: 12 },
-          { name: 'Sat', reports: 6 },
-          { name: 'Sun', reports: 3 },
-        ]);
+        setWeeklyReportData([]);
       } finally {
         setLoading(prev => ({ ...prev, weekly: false }));
       }
@@ -263,32 +244,20 @@ const Admin = () => {
       try {
         const isAdmin = userId.startsWith('admin_');
         const url = isAdmin 
-          ? "http://localhost:5000/api/damage-distribution" 
-          : `http://localhost:5000/api/damage-distribution?userId=${userId}`;
+          ? `${BACKEND_URL}/api/damage-distribution` 
+          : `${BACKEND_URL}/api/damage-distribution?userId=${userId}`;
         
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setDamageTypeData(data);
         } else {
-          console.warn("API not available, using mock data for damage distribution");
-          setDamageTypeData([
-            { name: 'Potholes', value: 35 },
-            { name: 'Cracks', value: 25 },
-            { name: 'Erosion', value: 15 },
-            { name: 'Debris', value: 10 },
-            { name: 'Other', value: 15 },
-          ]);
+          console.warn("Failed to load damage distribution from API");
+          setDamageTypeData([]);
         }
       } catch (error) {
         console.error("Error fetching damage distribution:", error);
-        setDamageTypeData([
-          { name: 'Potholes', value: 35 },
-          { name: 'Cracks', value: 25 },
-          { name: 'Erosion', value: 15 },
-          { name: 'Debris', value: 10 },
-          { name: 'Other', value: 15 },
-        ]);
+        setDamageTypeData([]);
       } finally {
         setLoading(prev => ({ ...prev, damage: false }));
       }
@@ -301,28 +270,20 @@ const Admin = () => {
       try {
         const isAdmin = userId.startsWith('admin_');
         const url = isAdmin 
-          ? "http://localhost:5000/api/severity-breakdown" 
-          : `http://localhost:5000/api/severity-breakdown?userId=${userId}`;
+          ? `${BACKEND_URL}/api/severity-breakdown` 
+          : `${BACKEND_URL}/api/severity-breakdown?userId=${userId}`;
         
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setSeverityData(data);
         } else {
-          console.warn("API not available, using mock data for severity breakdown");
-          setSeverityData([
-            { name: 'High', value: 20, color: '#ef4444' },
-            { name: 'Moderate', value: 45, color: '#f59e0b' },
-            { name: 'Low', value: 35, color: '#10b981' },
-          ]);
+          console.warn("Failed to load severity breakdown from API");
+          setSeverityData([]);
         }
       } catch (error) {
         console.error("Error fetching severity breakdown:", error);
-        setSeverityData([
-          { name: 'High', value: 20, color: '#ef4444' },
-          { name: 'Moderate', value: 45, color: '#f59e0b' },
-          { name: 'Low', value: 35, color: '#10b981' },
-        ]);
+        setSeverityData([]);
       } finally {
         setLoading(prev => ({ ...prev, severity: false }));
       }
@@ -335,32 +296,39 @@ const Admin = () => {
       try {
         const isAdmin = userId.startsWith('admin_');
         const url = isAdmin 
-          ? "http://localhost:5000/api/recent-reports?limit=4" 
-          : `http://localhost:5000/api/recent-reports?userId=${userId}&limit=4`;
+          ? `${BACKEND_URL}/api/recent-reports?limit=4` 
+          : `${BACKEND_URL}/api/recent-reports?userId=${userId}&limit=4`;
         
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setRecentReports(data);
         } else {
-          console.warn("API not available, using mock data for recent reports");
-          setRecentReports([
-            { id: 1, location: '123 Main St', type: 'Pothole', severity: 'high', date: '2023-06-15', status: 'pending' },
-            { id: 2, location: '456 Oak Ave', type: 'Crack', severity: 'moderate', date: '2023-06-14', status: 'approved' },
-            { id: 3, location: '789 Pine Rd', type: 'Erosion', severity: 'low', date: '2023-06-13', status: 'approved' },
-            { id: 4, location: '321 Elm St', type: 'Debris', severity: 'moderate', date: '2023-06-12', status: 'pending' },
-          ]);
+          console.warn("Failed to load recent reports from API");
+          setRecentReports([]);
         }
       } catch (error) {
         console.error("Error fetching recent reports:", error);
-        setRecentReports([
-          { id: 1, location: '123 Main St', type: 'Pothole', severity: 'high', date: '2023-06-15', status: 'pending' },
-          { id: 2, location: '456 Oak Ave', type: 'Crack', severity: 'moderate', date: '2023-06-14', status: 'approved' },
-          { id: 3, location: '789 Pine Rd', type: 'Erosion', severity: 'low', date: '2023-06-13', status: 'approved' },
-          { id: 4, location: '321 Elm St', type: 'Debris', severity: 'moderate', date: '2023-06-12', status: 'pending' },
-        ]);
+        setRecentReports([]);
       } finally {
         setLoading(prev => ({ ...prev, recent: false }));
+      }
+    };
+
+    const fetchUserCount = async () => {
+      if (!userId || !userId.startsWith('admin_')) return;
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/users`);
+        if (response.ok) {
+          const users = await response.json();
+          setUserCount(Array.isArray(users) ? users.length : 0);
+        } else {
+          setUserCount(0);
+        }
+      } catch (error) {
+        console.error("Error fetching users count:", error);
+        setUserCount(0);
       }
     };
     
@@ -370,45 +338,50 @@ const Admin = () => {
     fetchDamageDistribution();
     fetchSeverityBreakdown();
     fetchRecentReports();
+    fetchUserCount();
   }, [userId]);
 
-  // Thêm các state quản lý người dùng
+  // ThÃªm cÃ¡c state quáº£n lÃ½ ngÆ°á»i dÃ¹ng
   const [usersList, setUsersList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  const fetchUsersList = useCallback(async () => {
+    setLoadingUsers(true);
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users`);
+      if (response.ok) {
+        const users = await response.json();
+        setUsersList(users);
+        if (userId && userId.startsWith('admin_')) {
+          setUserCount(Array.isArray(users) ? users.length : 0);
+        }
+      } else {
+        setUsersList([]);
+      }
+    } catch (error) {
+      console.error("Lỗi:", error);
+      setUsersList([]);
+    } finally { setLoadingUsers(false); }
+  }, [userId]);
 
   // Gọi API lấy danh sách khi chuyển sang tab Users
   useEffect(() => {
     if (activeTab === "Users") fetchUsersList();
-  }, [activeTab]);
-
-  const fetchUsersList = async () => {
-    setLoadingUsers(true);
-    try {
-      const response = await fetch('http://localhost:5000/api/users');
-      if (response.ok) setUsersList(await response.json());
-    } catch (error) { console.error("Lỗi:", error); }
-    finally { setLoadingUsers(false); }
-  };
-
+  }, [activeTab, fetchUsersList]);
   const handleRoleChange = async (id, role) => {
-    await fetch(`http://localhost:5000/api/users/${id}/role`, {
+    await fetch(`${BACKEND_URL}/api/users/${id}/role`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role })
     });
-    fetchUsersList(); // Tải lại bảng
+    fetchUsersList(); // Táº£i láº¡i báº£ng
   };
 
   const handleDeleteUser = async (id) => {
-    if(!window.confirm('Xác nhận xóa tài khoản này?')) return;
-    const res = await fetch(`http://localhost:5000/api/users/${id}`, { method: 'DELETE' });
+    if(!window.confirm('XÃ¡c nháº­n xÃ³a tÃ i khoáº£n nÃ y?')) return;
+    const res = await fetch(`${BACKEND_URL}/api/users/${id}`, { method: 'DELETE' });
     if (res.ok) setUsersList(usersList.filter(u => u._id !== id));
   };
-
-  const radialData = [
-    { name: "Reviewed", value: reportStats.reviewed, fill: "#3b82f6" },
-    { name: "Pending", value: reportStats.pending, fill: "#facc15" },
-  ];
 
   // Tab change is now handled by the Sidebar component
 
@@ -542,14 +515,14 @@ const Admin = () => {
               <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-purple-500 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Active Users</h3>
+                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Users</h3>
                     <p className="text-4xl font-bold text-gray-800 mt-2">
-                      {userId && userId.startsWith('admin_') ? '24' : '1'}
+                      {userId && userId.startsWith('admin_') ? userCount : 1}
                     </p>
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <p className="text-sm text-purple-600 flex items-center font-medium">
                         <TrendingUp className="h-4 w-4 mr-1" />
-                        <span>{userId && userId.startsWith('admin_') ? '+8% from last week' : 'Currently active'}</span>
+                        <span>{userId && userId.startsWith('admin_') ? 'Registered accounts' : 'Currently active'}</span>
                       </p>
                     </div>
                   </div>
@@ -862,7 +835,9 @@ const Admin = () => {
                       <tbody className="bg-white divide-y divide-gray-200">
                         {recentReports.map((report, index) => (
                           <tr key={report.id} className={`hover:bg-indigo-50 transition-colors cursor-pointer ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">#{report.id.substring(0, 6)}</td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">
+                              #{String(report.id || '').substring(0, 6)}
+                            </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 flex items-center">
                               <MapPin className="h-4 w-4 text-gray-400 mr-1.5 flex-shrink-0" />
                               {report.location}
@@ -883,7 +858,7 @@ const Admin = () => {
                                       ? 'bg-yellow-500'
                                       : 'bg-green-500'
                                 }`}></span>
-                                {report.severity.charAt(0).toUpperCase() + report.severity.slice(1)}
+                                {String(report.severity || 'unknown').charAt(0).toUpperCase() + String(report.severity || 'unknown').slice(1)}
                               </span>
                             </td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">{report.date}</td>
@@ -906,7 +881,7 @@ const Admin = () => {
                                         ? 'bg-blue-500'
                                         : 'bg-green-500'
                                 }`}></span>
-                                {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                                {String(report.status || 'pending').charAt(0).toUpperCase() + String(report.status || 'pending').slice(1)}
                               </span>
                             </td>
                           </tr>
@@ -949,26 +924,26 @@ const Admin = () => {
           </>
         )}
 
-        {/* Quản lý tài khoản View */}
+        {/* User Management View */}
         {activeTab === "Users" && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Users className="h-6 w-6 text-indigo-600" />
-                Quản Lý Tài Khoản
+                User Management
               </h2>
             </div>
             
             {loadingUsers ? (
-               <p>Đang tải dữ liệu...</p>
+              <p>Loading data...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email / Tên</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Vai trò (Role)</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Hành động</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email / Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Action</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -991,7 +966,7 @@ const Admin = () => {
                             onClick={() => handleDeleteUser(user._id)}
                             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                           >
-                            Xóa
+                            XÃ³a
                           </button>
                         </td>
                       </tr>
@@ -1024,3 +999,5 @@ const Admin = () => {
 };
 
 export default Admin;
+
+
