@@ -39,13 +39,13 @@ const Capture = ({ setLocation }) => {
 
     return (
         <div className="p-4 border rounded-md shadow-md">
-            <h2 className="text-lg font-bold mb-2">Step 1: Enable Location</h2>
+            <h2 className="text-lg font-bold mb-2">Bước 1: Bật định vị</h2>
             <button
                 onClick={getLocation}
                 className="bg-blue-500 text-white px-4 py-2 rounded-md"
                 disabled={loading}
             >
-                {loading ? "Fetching location..." : "Enable Location"}
+                {loading ? "Đang lấy vị trí..." : "Bật định vị"}
             </button>
             {error && <p className="text-red-500 mt-2">{error}</p>}
         </div>

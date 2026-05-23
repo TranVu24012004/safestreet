@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle, UserPlus, CheckCircle, KeyRound } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  AlertCircle,
+  UserPlus,
+  CheckCircle,
+  KeyRound,
+} from "lucide-react";
 import { storeOTP, verifyOTP, removeOTP } from "../utils/otpUtils";
 
 const SignupPage = () => {
@@ -14,11 +24,9 @@ const SignupPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showOtpForm, setShowOtpForm] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const navigate = useNavigate();
 
-  // Countdown timer for OTP resend
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -26,7 +34,6 @@ const SignupPage = () => {
     }
   }, [countdown]);
 
-  // Request OTP
   const handleRequestOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -34,63 +41,54 @@ const SignupPage = () => {
     setSuccessMessage("");
 
     if (!name || !email || !password) {
-      setErrorMessage("All fields are required");
+      setErrorMessage("Vui lòng nhập đầy đủ thông tin.");
       setLoading(false);
       return;
     }
 
     try {
-      // Log the request for debugging
       console.log("Requesting OTP from server for:", { name, email });
-      
-      // Request OTP from the server
       const response = await fetch("http://localhost:5000/api/generate-otp", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({ name, email, password }),
       });
-      
+
       const data = await response.json();
       console.log("Server response:", data);
-      
+
       if (response.ok) {
-        // Check if email was sent successfully
         if (data.emailSent) {
-          setSuccessMessage(`Verification code sent to ${email}. Please check your inbox and spam folder.`);
+          setSuccessMessage(
+            `Mã xác thực đã được gửi tới ${email}. Vui lòng kiểm tra hộp thư đến và thư rác.`
+          );
+        } else if (data.otp) {
+          setSuccessMessage(`Không thể gửi email. Mã xác thực của bạn là: ${data.otp}`);
         } else {
-          // If email sending failed but OTP was generated
-          if (data.otp) {
-            setSuccessMessage(`Email sending failed. Your verification code is: ${data.otp}`);
-          } else {
-            setSuccessMessage("Verification code generated but email sending failed. Please try again.");
-          }
+          setSuccessMessage("Mã xác thực đã được tạo nhưng chưa thể gửi email. Vui lòng thử lại.");
         }
-        
-        // For development, if OTP is returned in the response, store it locally
+
         if (data.otp) {
           storeOTP(email, name, password, data.otp);
         }
-        
-        // Show OTP form
+
         setShowOtpForm(true);
-        setOtpSent(true);
-        setCountdown(60); // 60 seconds countdown for resend
+        setCountdown(60);
       } else {
-        setErrorMessage(data.error || "Failed to generate OTP. Please try again.");
+        setErrorMessage(data.error || "Không thể tạo mã xác thực. Vui lòng thử lại.");
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error("OTP Request Error:", error);
       setLoading(false);
-      setErrorMessage("Error connecting to server. Please try again.");
+      setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng thử lại.");
     }
   };
 
-  // Verify OTP and complete signup
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -98,94 +96,84 @@ const SignupPage = () => {
     setSuccessMessage("");
 
     try {
-      // First try to verify OTP locally (for development fallback)
       console.log("Verifying OTP locally first:", { email, otp });
       const localResult = verifyOTP(email, otp);
       console.log("Local OTP verification result:", localResult);
 
       if (localResult.valid) {
-        // OTP is valid locally, create the user
         try {
-          const { name, email, password } = localResult.userData;
-          
-          // Create user in the backend
+          const { name: verifiedName, email: verifiedEmail, password: verifiedPassword } = localResult.userData;
+
           const response = await fetch("http://localhost:5000/api/signup", {
             method: "POST",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
-              "Accept": "application/json"
+              Accept: "application/json",
             },
-            body: JSON.stringify({ name, email, password }),
+            body: JSON.stringify({
+              name: verifiedName,
+              email: verifiedEmail,
+              password: verifiedPassword,
+            }),
           });
-          
+
           console.log("Signup response status:", response.status);
-          
           const data = await response.json();
           console.log("Signup response data:", data);
-          
+
           if (response.ok) {
-            // Remove the OTP after successful verification
             removeOTP(email);
-            
-            setSuccessMessage("Signup successful! Redirecting to login...");
-            
-            // Redirect to login page after successful verification
+            setSuccessMessage("Đăng ký thành công! Đang chuyển tới trang đăng nhập...");
             setTimeout(() => {
               navigate("/login");
             }, 2000);
           } else {
-            setErrorMessage(data.error || "Signup failed. Please try again.");
+            setErrorMessage(data.error || "Đăng ký thất bại. Vui lòng thử lại.");
           }
         } catch (error) {
           console.error("Signup Error:", error);
-          setErrorMessage("Error creating user. Please try again.");
+          setErrorMessage("Không thể tạo tài khoản. Vui lòng thử lại.");
         }
       } else {
-        // If local verification fails, try server verification
         try {
           console.log("Trying server OTP verification:", { email, otp });
-          
-          // Verify OTP with the server
           const verifyResponse = await fetch("http://localhost:5000/api/verify-otp", {
             method: "POST",
-            headers: { 
+            headers: {
               "Content-Type": "application/json",
-              "Accept": "application/json"
+              Accept: "application/json",
             },
             body: JSON.stringify({ email, otp }),
           });
-          
+
           const verifyData = await verifyResponse.json();
           console.log("Server OTP verification response:", verifyData);
-          
+
           if (verifyResponse.ok) {
-            setSuccessMessage("Signup successful! Redirecting to login...");
-            
-            // Redirect to login page after successful verification
+            setSuccessMessage("Đăng ký thành công! Đang chuyển tới trang đăng nhập...");
             setTimeout(() => {
               navigate("/login");
             }, 2000);
           } else {
-            setErrorMessage(verifyData.error || "OTP verification failed. Please try again.");
+            setErrorMessage(verifyData.error || "Mã xác thực không hợp lệ. Vui lòng thử lại.");
           }
         } catch (serverError) {
           console.error("Server OTP Verification Error:", serverError);
-          setErrorMessage("Error connecting to server. Please try again.");
+          setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng thử lại.");
         }
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error("OTP Verification Error:", error);
       setLoading(false);
-      setErrorMessage("Error during OTP verification.");
+      setErrorMessage("Đã xảy ra lỗi khi xác thực mã.");
     }
   };
 
-  // Resend OTP
   const handleResendOtp = async () => {
-    if (countdown > 0) return; // Prevent resend if countdown is active
-    
+    if (countdown > 0) return;
+
     setLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
@@ -197,7 +185,7 @@ const SignupPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify({ name, email, password }),
       });
@@ -206,7 +194,7 @@ const SignupPage = () => {
       console.log("Resend OTP server response:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to resend OTP");
+        throw new Error(data.error || "Không thể gửi lại mã xác thực.");
       }
 
       if (data.otp) {
@@ -215,18 +203,18 @@ const SignupPage = () => {
 
       setSuccessMessage(
         data.emailSent
-          ? `Verification code sent to ${email}. Please check your inbox and spam folder.`
+          ? `Mã xác thực đã được gửi tới ${email}. Vui lòng kiểm tra hộp thư đến và thư rác.`
           : data.otp
-            ? `Email sending failed. Your verification code is: ${data.otp}`
-            : "Verification code generated but email sending failed. Please try again."
+            ? `Không thể gửi email. Mã xác thực của bạn là: ${data.otp}`
+            : "Mã xác thực đã được tạo nhưng chưa thể gửi email. Vui lòng thử lại."
       );
 
-      setCountdown(60); // Reset countdown
+      setCountdown(60);
       setLoading(false);
     } catch (error) {
       console.error("Resend OTP Error:", error);
       setLoading(false);
-      setErrorMessage("Error generating new OTP. Please try again.");
+      setErrorMessage("Không thể gửi lại mã xác thực. Vui lòng thử lại.");
     }
   };
 
@@ -234,15 +222,14 @@ const SignupPage = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="min-h-screen flex items-center justify-center p-6 pt-20">
         <div className="bg-white shadow-2xl rounded-3xl flex w-full max-w-5xl overflow-hidden">
-          
-          {/* Left: Signup Form */}
           <div className="w-full md:w-1/2 p-10 md:p-12">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">Tạo tài khoản</h2>
-              <p className="text-gray-600">Tham gia cùng chúng tôi để bắt đầu báo cáo sự cố đường bộ</p>
+              <p className="text-gray-600">
+                Tham gia cùng chúng tôi để bắt đầu báo cáo và theo dõi sự cố mặt đường.
+              </p>
             </div>
 
-            {/* Success Message */}
             {successMessage && (
               <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-md flex items-start mb-6">
                 <CheckCircle className="text-green-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
@@ -250,7 +237,6 @@ const SignupPage = () => {
               </div>
             )}
 
-            {/* Error Message */}
             {errorMessage && (
               <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start mb-6">
                 <AlertCircle className="text-red-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
@@ -258,16 +244,15 @@ const SignupPage = () => {
               </div>
             )}
 
-            {/* OTP Verification Form */}
             {showOtpForm ? (
               <form className="space-y-6" onSubmit={handleVerifyOtp}>
                 <div className="bg-blue-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-blue-700">
-                    Chúng tôi đã gửi mã xác thực tới <strong>{email}</strong>. 
-                    Vui lòng kiểm tra email (kể cả thư rác) và nhập mã bên dưới để hoàn tất đăng ký.
+                    Chúng tôi đã gửi mã xác thực tới <strong>{email}</strong>. Vui lòng kiểm tra hộp
+                    thư đến, thư rác và nhập mã bên dưới để hoàn tất đăng ký.
                   </p>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Mã xác thực</label>
                   <div className="relative">
@@ -279,7 +264,7 @@ const SignupPage = () => {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Nhập mã 6 chữ số"
+                      placeholder="Nhập mã gồm 6 chữ số"
                       maxLength={6}
                       required
                     />
@@ -303,7 +288,7 @@ const SignupPage = () => {
                     ) : (
                       <>
                         <CheckCircle size={18} className="mr-2" />
-                        Xác thực & Hoàn tất đăng ký
+                        Xác thực và hoàn tất đăng ký
                       </>
                     )}
                   </button>
@@ -314,11 +299,9 @@ const SignupPage = () => {
                     disabled={loading || countdown > 0}
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
-                    {countdown > 0 
-                      ? `Gửi lại mã sau ${countdown}s` 
-                      : "Chưa nhận được mã? Gửi lại"}
+                    {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : "Chưa nhận được mã? Gửi lại"}
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => {
@@ -329,12 +312,11 @@ const SignupPage = () => {
                     }}
                     className="text-gray-500 hover:text-gray-700 text-sm"
                   >
-                    Back to signup
+                    Quay lại biểu mẫu đăng ký
                   </button>
                 </div>
               </form>
             ) : (
-              /* Initial Signup Form */
               <form className="space-y-6" onSubmit={handleRequestOtp}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
@@ -347,7 +329,7 @@ const SignupPage = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Họ và tên của bạn"
+                      placeholder="Nguyễn Văn A"
                       required
                     />
                   </div>
@@ -385,10 +367,11 @@ const SignupPage = () => {
                       required
                       minLength={8}
                     />
-                    <button 
+                    <button
                       type="button"
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                     >
                       {showPassword ? (
                         <EyeOff size={18} className="text-gray-400 hover:text-gray-600" />
@@ -397,7 +380,7 @@ const SignupPage = () => {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Mật khẩu phải có ít nhất 8 ký tự</p>
+                  <p className="text-xs text-gray-500 mt-1">Mật khẩu cần có ít nhất 8 ký tự.</p>
                 </div>
 
                 <button
@@ -411,12 +394,12 @@ const SignupPage = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Sending verification code...
+                      Đang gửi mã xác thực...
                     </>
                   ) : (
                     <>
                       <UserPlus size={18} className="mr-2" />
-                      Continue with Email Verification
+                      Tiếp tục với xác thực email
                     </>
                   )}
                 </button>
@@ -443,36 +426,36 @@ const SignupPage = () => {
             </p>
           </div>
 
-          {/* Right: Signup Illustration with greenish background */}
           <div className="hidden md:block w-1/2 bg-gradient-to-br from-green-500 to-teal-600 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-20">
               <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
                   </pattern>
                   <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
-                    <rect width="100" height="100" fill="url(#smallGrid)"/>
-                    <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1"/>
+                    <rect width="100" height="100" fill="url(#smallGrid)" />
+                    <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1" />
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
               </svg>
             </div>
-            
+
             <div className="relative z-10 h-full flex flex-col justify-between p-12">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-6">Tham gia cộng đồng bảo trì đường bộ của chúng tôi</h2>
+                <h2 className="text-3xl font-bold text-white mb-6">Tham gia cộng đồng giám sát giao thông</h2>
                 <p className="text-white mb-8 leading-relaxed">
-                  Khi tạo tài khoản, bạn có thể báo cáo sự cố đường, theo dõi tiến trình sửa chữa và góp phần cải thiện cơ sở hạ tầng cho cộng đồng.
+                  Tạo tài khoản để gửi báo cáo hư hỏng, theo dõi tiến độ xử lý và góp phần cải thiện
+                  an toàn hạ tầng cho cộng đồng.
                 </p>
-                
+
                 <div className="space-y-4">
                   {[
-                    "Báo cáo hư hỏng đường với ảnh và vị trí",
-                    "Theo dõi tình trạng báo cáo của bạn",
-                    "Nhận cập nhật về sửa chữa gần đó",
-                    "Góp phần vào đường phố an toàn hơn cho mọi người"
+                    "Gửi ảnh hư hỏng kèm vị trí",
+                    "Theo dõi tiến độ xử lý báo cáo",
+                    "Nhận cập nhật từ cơ quan chức năng",
+                    "Đóng góp cho hệ thống giao thông an toàn hơn",
                   ].map((feature, index) => (
                     <div key={index} className="flex items-center">
                       <svg className="h-5 w-5 text-white/70 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -483,7 +466,7 @@ const SignupPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
                 <div className="flex items-center space-x-4">
                   <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
@@ -492,8 +475,11 @@ const SignupPage = () => {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-white font-medium">"Since joining, I've reported 5 potholes that have been fixed within weeks!"</p>
-                    <p className="text-white text-sm mt-1">- Community Member</p>
+                    <p className="text-white font-medium">
+                      "Từ khi tham gia, tôi có thể báo cáo sự cố nhanh hơn và theo dõi trạng thái xử
+                      lý rất rõ ràng."
+                    </p>
+                    <p className="text-white text-sm mt-1">- Thành viên cộng đồng</p>
                   </div>
                 </div>
               </div>

@@ -5,16 +5,13 @@ const Camera = () => {
   const [devices, setDevices] = useState([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState("");
 
-  // Get available video input devices (cameras)
   useEffect(() => {
     const fetchDevices = async () => {
       try {
         const deviceInfos = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = deviceInfos.filter(
-          (device) => device.kind === "videoinput"
-        );
+        const videoDevices = deviceInfos.filter((device) => device.kind === "videoinput");
         setDevices(videoDevices);
-        // Set default selected device
+
         if (videoDevices.length > 0) {
           setSelectedDeviceId(videoDevices[0].deviceId);
         }
@@ -32,7 +29,7 @@ const Camera = () => {
     try {
       const constraints = {
         video: { deviceId: { exact: selectedDeviceId } },
-        audio: false
+        audio: false,
       };
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -46,7 +43,7 @@ const Camera = () => {
 
   return (
     <div className="flex flex-col items-center gap-4 p-4">
-      <h2 className="text-xl font-semibold">Select Camera</h2>
+      <h2 className="text-xl font-semibold">Chọn camera</h2>
 
       <select
         value={selectedDeviceId}
@@ -60,19 +57,11 @@ const Camera = () => {
         ))}
       </select>
 
-      <button
-        onClick={startCamera}
-        className="bg-blue-600 text-white px-4 py-2 rounded shadow"
-      >
-        Start Camera
+      <button onClick={startCamera} className="bg-blue-600 text-white px-4 py-2 rounded shadow">
+        Bật camera
       </button>
 
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        className="mt-4 w-full max-w-md rounded shadow"
-      />
+      <video ref={videoRef} autoPlay playsInline className="mt-4 w-full max-w-md rounded shadow" />
     </div>
   );
 };

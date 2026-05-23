@@ -1,408 +1,391 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './ViewFeed.css'; // Import custom CSS for animations
-import { 
-  Inbox, 
-  Check, 
-  ChevronDown, 
-  Search, 
-  Mail, 
-  Calendar, 
-  Filter, 
-  RefreshCw, 
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import "./ViewFeed.css";
+import {
   AlertCircle,
-  CheckCircle,
-  User,
-  Loader2,
-  X,
-  MessageSquare,
-  Clock,
   ArrowUpDown,
-  Bell,
-  ExternalLink,
-  BarChart
-} from 'lucide-react';
+  Calendar,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Inbox,
+  Loader2,
+  Mail,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  Send,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import { BACKEND_URL } from "../utils/apiConfig";
+
+const STATUS_LABELS = {
+  pending: "Đang chờ",
+  completed: "Đã hoàn thành",
+};
 
 const ViewFeed = () => {
-  const navigate = useNavigate();
   const [feedbacks, setFeedbacks] = useState([]);
-  const [filteredFeedbacks, setFilteredFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'dateSubmitted', direction: 'desc' });
-  const [filters, setFilters] = useState({ status: 'all' });
-  const [replyModal, setReplyModal] = useState({ isOpen: false, feedback: null });
-  const [replyText, setReplyText] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [notification, setNotification] = useState({ show: false, message: '', type: '' });
-  const [userId, setUserId] = useState(null);
+  const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortConfig, setSortConfig] = useState({
+    key: "dateSubmitted",
+    direction: "desc",
+  });
+  const [replyModal, setReplyModal] = useState({ open: false, feedback: null });
+  const [replyText, setReplyText] = useState("");
+  const [busyKey, setBusyKey] = useState("");
+  const [notification, setNotification] = useState({
+    show: false,
+    type: "success",
+    message: "",
+  });
+  const [userId, setUserId] = useState("");
   const [userName, setUserName] = useState("");
-  const [activeTab, setActiveTab] = useState("View Feedbacks");
+  const notificationTimerRef = useRef(null);
 
   useEffect(() => {
+    setUserId(localStorage.getItem("roadVisionUserId") || "");
+    setUserName(localStorage.getItem("roadVisionUserName") || "");
     fetchFeedbacks();
-    
-    // Get user info from localStorage
-    const storedUserId = localStorage.getItem('roadVisionUserId');
-    const storedUserName = localStorage.getItem('roadVisionUserName');
-    
-    if (storedUserId) {
-      setUserId(storedUserId);
-    }
-    
-    if (storedUserName) {
-      setUserName(storedUserName);
-    }
+
+    return () => {
+      if (notificationTimerRef.current) {
+        clearTimeout(notificationTimerRef.current);
+      }
+    };
   }, []);
+
+  const showNotification = (message, type = "success") => {
+    if (notificationTimerRef.current) {
+      clearTimeout(notificationTimerRef.current);
+    }
+
+    setNotification({ show: true, message, type });
+    notificationTimerRef.current = setTimeout(() => {
+      setNotification((prev) => ({ ...prev, show: false }));
+    }, 5000);
+  };
+
+  const readApiError = async (response, fallbackMessage) => {
+    try {
+      const data = await response.json();
+      return data?.error || data?.message || fallbackMessage;
+    } catch {
+      return fallbackMessage;
+    }
+  };
 
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
-      
-      // Mock data for development (to avoid API errors)
-      const mockData = [
-        {
-          _id: '1',
-          name: 'John Smith',
-          email: 'john.smith@example.com',
-          subject: 'Road damage on Main Street',
-          message: 'There is a large pothole on Main Street near the intersection with Oak Avenue. It has been there for weeks and is causing damage to vehicles.',
-          dateSubmitted: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
-          completed: false,
-          userId: 'user123'
-        },
-        {
-          _id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah.j@example.com',
-          subject: 'Thank you for the quick repair',
-          message: 'I wanted to thank your team for quickly repairing the damaged sidewalk in our neighborhood. Great work!',
-          dateSubmitted: new Date(Date.now() - 86400000 * 5).toISOString(), // 5 days ago
-          completed: true,
-          userId: 'user456'
-        },
-        {
-          _id: '3',
-          name: 'Michael Chen',
-          email: 'mchen@example.com',
-          subject: 'Faded road markings on Highway 7',
-          message: 'The lane markings on Highway 7 between exits 12 and 14 are severely faded and barely visible at night. This is creating a dangerous situation for drivers.',
-          dateSubmitted: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-          completed: false,
-          userId: 'user789'
-        },
-        {
-          _id: '4',
-          name: 'Emily Rodriguez',
-          email: 'emily.r@example.com',
-          subject: 'Suggestion for road safety improvement',
-          message: 'I would like to suggest adding a pedestrian crossing at the intersection of Pine Street and 5th Avenue. Many children cross there to reach the school and it\'s currently unsafe.',
-          dateSubmitted: new Date(Date.now() - 86400000 * 10).toISOString(), // 10 days ago
-          completed: true,
-          userId: 'user101'
-        },
-        {
-          _id: '5',
-          name: 'David Wilson',
-          email: 'dwilson@example.com',
-          subject: 'Drainage issue causing road flooding',
-          message: 'After every rainfall, there is significant flooding on Cedar Road due to poor drainage. This has been an ongoing issue for months now.',
-          dateSubmitted: new Date().toISOString(), // Today
-          completed: false,
-          userId: 'user202'
-        }
-      ];
-      
-      try {
-        // Try to fetch from API first
-        const response = await fetch('http://localhost:5000/api/feedbacks');
-        if (response.ok) {
-          const data = await response.json();
-          // Ensure each feedback has a completed property
-          const processedData = data.map(feedback => ({
-            ...feedback,
-            completed: feedback.completed === undefined ? false : feedback.completed
-          }));
-          
-          setFeedbacks(processedData);
-          setFilteredFeedbacks(processedData);
-        } else {
-          // If API fails, use mock data
-          console.log('Using mock data as API is unavailable');
-          setFeedbacks(mockData);
-          setFilteredFeedbacks(mockData);
-        }
-      } catch (err) {
-        // If fetch fails completely, use mock data
-        console.log('Using mock data as API is unavailable:', err.message);
-        setFeedbacks(mockData);
-        setFilteredFeedbacks(mockData);
+      setError("");
+
+      const response = await fetch(`${BACKEND_URL}/api/feedbacks`);
+      if (!response.ok) {
+        throw new Error(await readApiError(response, "Không thể tải danh sách phản ánh."));
       }
-    } catch (err) {
-      console.error('Error in fetchFeedbacks:', err);
-      setError('Không thể tải phản hồi. Vui lòng thử lại sau.');
+
+      const data = await response.json();
+      const normalized = Array.isArray(data)
+        ? data.map((feedback) => ({
+            ...feedback,
+            completed: Boolean(feedback.completed),
+            replied: Boolean(feedback.replied),
+          }))
+        : [];
+
+      setFeedbacks(normalized);
+    } catch (fetchError) {
+      console.error("Error fetching feedbacks:", fetchError);
+      setError(fetchError.message || "Không thể tải danh sách phản ánh.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    let result = [...feedbacks];
-    
-    // Apply search
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(feedback => 
-        feedback.name.toLowerCase().includes(query) ||
-        feedback.email.toLowerCase().includes(query) ||
-        feedback.subject.toLowerCase().includes(query) ||
-        feedback.message.toLowerCase().includes(query)
-      );
-    }
-    
-    // Apply status filter
-    if (filters.status !== 'all') {
-      result = result.filter(feedback => 
-        (filters.status === 'completed' && feedback.completed) || 
-        (filters.status === 'pending' && !feedback.completed)
-      );
-    }
-    
-    // Apply sorting
-    if (sortConfig.key) {
-      result.sort((a, b) => {
-        let aVal = a[sortConfig.key];
-        let bVal = b[sortConfig.key];
-        
-        if (sortConfig.key === 'dateSubmitted') {
-          aVal = new Date(aVal);
-          bVal = new Date(bVal);
+  const filteredFeedbacks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    const result = feedbacks
+      .filter((feedback) => {
+        if (statusFilter === "completed" && !feedback.completed) {
+          return false;
         }
-        
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+
+        if (statusFilter === "pending" && feedback.completed) {
+          return false;
+        }
+
+        if (!query) {
+          return true;
+        }
+
+        return [
+          feedback.name,
+          feedback.email,
+          feedback.subject,
+          feedback.message,
+        ]
+          .filter(Boolean)
+          .some((value) => value.toLowerCase().includes(query));
+      })
+      .sort((firstItem, secondItem) => {
+        const firstValue = firstItem?.[sortConfig.key];
+        const secondValue = secondItem?.[sortConfig.key];
+
+        const normalizedFirst =
+          sortConfig.key === "dateSubmitted"
+            ? new Date(firstValue || 0).getTime()
+            : String(firstValue || "").toLowerCase();
+        const normalizedSecond =
+          sortConfig.key === "dateSubmitted"
+            ? new Date(secondValue || 0).getTime()
+            : String(secondValue || "").toLowerCase();
+
+        if (normalizedFirst < normalizedSecond) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+
+        if (normalizedFirst > normalizedSecond) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+
         return 0;
       });
-    }
-    
-    setFilteredFeedbacks(result);
-  }, [feedbacks, searchQuery, filters, sortConfig]);
+
+    return result;
+  }, [feedbacks, searchQuery, sortConfig, statusFilter]);
 
   const toggleSort = (key) => {
-    setSortConfig(prev => ({
+    setSortConfig((current) => ({
       key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+      direction:
+        current.key === key && current.direction === "asc" ? "desc" : "asc",
     }));
   };
 
-  const handleStatusChange = async (id, isCompleted) => {
+  const formatDate = (value) => {
+    if (!value) {
+      return "Chưa có thời gian";
+    }
+
+    return new Date(value).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const sendUserNotification = async (payload) => {
     try {
-      setSubmitting(true);
-      
-      // Get the feedback to access the userId
-      const feedback = feedbacks.find(item => item._id === id);
-      if (!feedback) {
-        throw new Error('Không tìm thấy phản hồi');
+      await fetch(`${BACKEND_URL}/api/user-notification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch (notificationError) {
+      console.error("Notification error:", notificationError);
+    }
+  };
+
+  const handleStatusChange = async (feedback, nextCompletedValue) => {
+    const nextLabel = nextCompletedValue
+      ? STATUS_LABELS.completed
+      : STATUS_LABELS.pending;
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn đổi trạng thái phản ánh "${feedback.subject}" thành "${nextLabel}" không?`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setBusyKey(`status-${feedback._id}`);
+
+      const response = await fetch(`${BACKEND_URL}/api/feedbacks/${feedback._id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completed: nextCompletedValue,
+          userId: feedback.userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          await readApiError(response, "Không thể cập nhật trạng thái phản ánh.")
+        );
       }
-      
-      try {
-        // Try API call to update feedback status
-        const response = await fetch(`http://localhost:5000/api/feedbacks/${id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            completed: isCompleted,
-            userId: feedback.userId // Include userId to identify which user to notify
-          })
-        });
-        
-        if (!response.ok) {
-          console.log('API call failed, proceeding with local state update only');
-        } else {
-          console.log('API call successful');
-        }
-      } catch (apiError) {
-        console.log('API call failed, proceeding with local state update only:', apiError.message);
-        // Continue with local state update even if API fails
-      }
-      
-      // Update local state regardless of API success
-      setFeedbacks(prev => 
-        prev.map(item => 
-          item._id === id ? { ...item, completed: isCompleted } : item
+
+      const updatedFeedback = await response.json();
+      setFeedbacks((current) =>
+        current.map((item) =>
+          item._id === feedback._id
+            ? { ...item, ...updatedFeedback, completed: Boolean(updatedFeedback.completed) }
+            : item
         )
       );
-      
-      // Try to create a notification for the user
+
       if (feedback.userId) {
-        try {
-          // Try to send notification to the user
-          await fetch('http://localhost:5000/api/user-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: feedback.userId,
-              title: 'Trạng thái phản hồi đã cập nhật',
-              message: `Phản hồi của bạn "${feedback.subject}" đã được đánh dấu là ${isCompleted ? 'đã hoàn thành' : 'đang chờ'}.`,
-              type: 'feedback',
-              details: {
-                feedbackId: id,
-                status: isCompleted ? 'completed' : 'pending',
-                subject: feedback.subject
-              }
-            })
-          });
-          console.log('User notification sent successfully');
-        } catch (notificationError) {
-          console.log('Error sending user notification (non-critical):', notificationError.message);
-          // Continue even if notification fails
-        }
+        void sendUserNotification({
+          userId: feedback.userId,
+          title: "Trạng thái phản ánh đã được cập nhật",
+          message: `Phản ánh "${feedback.subject}" đã được chuyển sang trạng thái "${nextLabel}".`,
+          type: "feedback_status",
+          details: {
+            feedbackId: feedback._id,
+            status: nextCompletedValue ? "completed" : "pending",
+            subject: feedback.subject,
+          },
+        });
       }
-      
-      showNotification(`Phản hồi đã được đánh dấu là ${isCompleted ? 'đã hoàn thành' : 'đang chờ'}`, 'success');
-    } catch (err) {
-      console.error('Error in handleStatusChange:', err);
-      showNotification('Chỉ cập nhật giao diện người dùng (máy chủ hiện không khả dụng)', 'success');
+
+      showNotification(`Đã cập nhật trạng thái thành "${nextLabel}".`);
+    } catch (statusError) {
+      console.error("Error updating feedback status:", statusError);
+      showNotification(
+        statusError.message || "Không thể cập nhật trạng thái phản ánh.",
+        "error"
+      );
     } finally {
-      setSubmitting(false);
+      setBusyKey("");
     }
   };
 
   const openReplyModal = (feedback) => {
-    setReplyModal({ isOpen: true, feedback });
-    setReplyText('');
+    setReplyModal({ open: true, feedback });
+    setReplyText(feedback.replyText || "");
   };
 
   const closeReplyModal = () => {
-    setReplyModal({ isOpen: false, feedback: null });
+    setReplyModal({ open: false, feedback: null });
+    setReplyText("");
   };
 
   const handleSendReply = async () => {
-    if (!replyText.trim()) return;
-    
+    const currentFeedback = replyModal.feedback;
+
+    if (!currentFeedback || !replyText.trim()) {
+      return;
+    }
+
     try {
-      setSubmitting(true);
-      
-      try {
-        // Try API call to send reply
-        const response = await fetch(`http://localhost:5000/api/feedbacks/${replyModal.feedback._id}/reply`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            replyText,
-            recipientEmail: replyModal.feedback.email,
-            recipientName: replyModal.feedback.name,
-            senderEmail: 'venkatmadhu232@gmail.com', // Added sender email
-            userId: replyModal.feedback.userId // Include userId to identify which user to notify
-          })
-        });
-        
-        if (!response.ok) {
-          console.log('API call to send reply failed, proceeding with UI update only');
-        } else {
-          console.log('API call to send reply successful');
+      setBusyKey(`reply-${currentFeedback._id}`);
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/feedbacks/${currentFeedback._id}/reply`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            replyText: replyText.trim(),
+            recipientEmail: currentFeedback.email,
+            recipientName: currentFeedback.name,
+            userId: currentFeedback.userId,
+          }),
         }
-      } catch (apiError) {
-        console.log('API call to send reply failed:', apiError.message);
-        // Continue with UI updates even if API fails
+      );
+
+      if (!response.ok) {
+        throw new Error(await readApiError(response, "Không thể gửi phản hồi."));
       }
-      
-      // Try to send notification to the user if userId exists
-      if (replyModal.feedback.userId) {
-        try {
-          // Try to send notification to the user
-          await fetch('http://localhost:5000/api/user-notification', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId: replyModal.feedback.userId,
-              title: 'Phản hồi mới cho phản hồi của bạn',
-              message: `Bạn đã nhận được phản hồi cho phản hồi của mình "${replyModal.feedback.subject}".`,
-              type: 'feedback_reply',
-              details: {
-                feedbackId: replyModal.feedback._id,
-                subject: replyModal.feedback.subject,
-                replyText: replyText,
-                replyDate: new Date()
+
+      const result = await response.json();
+      const updatedFeedback = result.feedback || {
+        ...currentFeedback,
+        replyText: replyText.trim(),
+        replyDate: new Date().toISOString(),
+        replied: true,
+        completed: true,
+      };
+
+      setFeedbacks((current) =>
+        current.map((item) =>
+          item._id === currentFeedback._id
+            ? {
+                ...item,
+                ...updatedFeedback,
+                replied: true,
+                completed: true,
               }
-            })
-          });
-          console.log('User notification for reply sent successfully');
-        } catch (notificationError) {
-          console.log('Error sending user notification for reply (non-critical):', notificationError.message);
-          // Continue even if notification fails
-        }
+            : item
+        )
+      );
+
+      if (currentFeedback.userId) {
+        void sendUserNotification({
+          userId: currentFeedback.userId,
+          title: "Bạn đã nhận được phản hồi mới",
+          message: `Phản ánh "${currentFeedback.subject}" đã có phản hồi từ quản trị viên.`,
+          type: "feedback_reply",
+          details: {
+            feedbackId: currentFeedback._id,
+            subject: currentFeedback.subject,
+            replyText: replyText.trim(),
+            replyDate: updatedFeedback.replyDate || new Date().toISOString(),
+          },
+        });
       }
-      
-      // Mark as completed if not already
-      if (!replyModal.feedback.completed) {
-        try {
-          await handleStatusChange(replyModal.feedback._id, true);
-        } catch (statusError) {
-          console.log('Error updating status after reply (non-critical):', statusError.message);
-          // Update local state directly if handleStatusChange fails
-          setFeedbacks(prev => 
-            prev.map(item => 
-              item._id === replyModal.feedback._id ? { ...item, completed: true } : item
-            )
-          );
-        }
-      }
-      
+
       closeReplyModal();
-      showNotification('Đã gửi phản hồi thành công', 'success');
-    } catch (err) {
-      console.error('Error in handleSendReply:', err);
-      // Still close the modal and show success to improve UX in demo mode
-      closeReplyModal();
-      showNotification('Phản hồi đã được lưu (máy chủ không khả dụng)', 'success');
+      showNotification(
+        result.emailSent === false
+          ? "Đã lưu phản hồi và cập nhật trạng thái. Email chưa được gửi do cấu hình máy chủ."
+          : "Đã gửi phản hồi thành công."
+      );
+    } catch (replyError) {
+      console.error("Error sending reply:", replyError);
+      showNotification(replyError.message || "Không thể gửi phản hồi.", "error");
     } finally {
-      setSubmitting(false);
+      setBusyKey("");
     }
   };
 
-  const showNotification = (message, type) => {
-    // Hide any existing notification first
-    setNotification({ show: false, message: '', type: '' });
-    
-    // Small delay before showing new notification for better UX
-    setTimeout(() => {
-      setNotification({ show: true, message, type });
-      
-      // Auto-hide notification after 5 seconds
-      const timer = setTimeout(() => {
-        setNotification(prev => ({ ...prev, show: false }));
-        
-        // After fade out animation completes, reset the message
-        setTimeout(() => {
-          setNotification({ show: false, message: '', type: '' });
-        }, 300);
-      }, 5000);
-      
-      // Clear timeout if component unmounts
-      return () => clearTimeout(timer);
-    }, 100);
-  };
+  const handleDeleteFeedback = async (feedback) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn xóa phản ánh "${feedback.subject}" không? Hành động này không thể hoàn tác.`
+    );
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setBusyKey(`delete-${feedback._id}`);
+
+      const response = await fetch(`${BACKEND_URL}/api/feedbacks/${feedback._id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(await readApiError(response, "Không thể xóa phản ánh."));
+      }
+
+      setFeedbacks((current) => current.filter((item) => item._id !== feedback._id));
+      showNotification("Đã xóa phản ánh thành công.");
+    } catch (deleteError) {
+      console.error("Error deleting feedback:", deleteError);
+      showNotification(deleteError.message || "Không thể xóa phản ánh.", "error");
+    } finally {
+      setBusyKey("");
+    }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 pd-30 ">
-        <div className="flex items-center space-x-2 text-green-600">
-          <Loader2 className="animate-spin h-6 w-6" />
-          <span className="font-medium">Loading feedback data...</span>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex items-center gap-3 text-green-700">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span className="font-medium">Đang tải danh sách phản ánh...</span>
         </div>
       </div>
     );
@@ -411,9 +394,12 @@ const ViewFeed = () => {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-red-500 flex items-center space-x-2">
+        <div className="bg-white rounded-xl border border-red-100 shadow-sm p-6 flex items-center gap-3 text-red-600">
           <AlertCircle className="h-6 w-6" />
-          <span>{error}</span>
+          <div>
+            <p className="font-semibold">Không tải được dữ liệu</p>
+            <p className="text-sm">{error}</p>
+          </div>
         </div>
       </div>
     );
@@ -421,464 +407,372 @@ const ViewFeed = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar Component */}
-      <Sidebar activeTab={activeTab} userName={userName} userId={userId} />
-      
-      <div className="flex-1 ml-64 w-full">
-        {/* Green-themed Notification */}
+      <Sidebar activeTab="View Feedbacks" userName={userName} userId={userId} />
+
+      <div className="flex-1 ml-64">
         {notification.show && (
-          <div 
-            className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-md flex items-center space-x-3 transform transition-all duration-300 ease-in-out animate-fade-in-down ml-64 ${
-              notification.type === 'success' 
-                ? 'bg-green-600 text-white' 
-                : 'bg-red-600 text-white'
+          <div
+            className={`fixed top-4 right-4 z-50 flex items-start gap-3 rounded-xl px-4 py-3 shadow-lg transition-all ${
+              notification.type === "error"
+                ? "bg-red-600 text-white"
+                : "bg-green-600 text-white"
             }`}
-            style={{ maxWidth: '350px' }}
+            style={{ maxWidth: "420px" }}
           >
-            <div className={`p-1.5 rounded-full bg-white bg-opacity-20`}>
-              {notification.type === 'success' ? 
-                <CheckCircle className="h-5 w-5 text-white" /> : 
-                <AlertCircle className="h-5 w-5 text-white" />
-              }
-            </div>
+            {notification.type === "error" ? (
+              <AlertCircle className="h-5 w-5 mt-0.5" />
+            ) : (
+              <CheckCircle className="h-5 w-5 mt-0.5" />
+            )}
             <div className="flex-1">
-              <p className="font-bold text-sm">
-                {notification.type === 'success' ? 'Thành công' : 'Lỗi'}
+              <p className="font-semibold">
+                {notification.type === "error" ? "Không thành công" : "Thành công"}
               </p>
-              <p className="text-sm text-white font-medium">{notification.message}</p>
+              <p className="text-sm">{notification.message}</p>
             </div>
-            <button 
-              onClick={() => setNotification({ show: false, message: '', type: '' })}
-              className="text-white text-opacity-80 hover:text-white transition-colors bg-white bg-opacity-10 p-1 rounded-full hover:bg-opacity-20"
+            <button
+              onClick={() => setNotification((current) => ({ ...current, show: false }))}
+              className="rounded-full bg-white/10 p-1 hover:bg-white/20"
+              aria-label="Đóng thông báo"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
 
-        {/* Enhanced Header */}
-        <header className="bg-gradient-to-r from-green-600 to-emerald-700 shadow-md w-full">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center">
-                  <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
-                    <MessageSquare className="w-6 h-6 text-white" />
-                  </div>
-                  Quản lý phản hồi
-                </h1>
-                <p className="text-white text-opacity-90 mt-1 text-m pt-20">
-                  Quản lý và phản hồi ý kiến người dùng hiệu quả
-                </p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="bg-green-500 bg-opacity-30 text-white rounded-lg px-3 py-1.5 text-sm flex items-center">
-                  <BarChart className="w-4 h-4 mr-1.5 text-white" />
-                  <span>Total: {feedbacks.length}</span>
-                </div>
-                <button 
-                  onClick={fetchFeedbacks}
-                  className="flex items-center text-sm bg-white text-green-700 font-medium rounded-lg px-3 py-1.5 hover:bg-green-50 transition-colors shadow-sm"
-                >
-                  <RefreshCw className="w-4 h-4 mr-1.5" />
-                  Tải lại
-                </button>
-              </div>
+        <header className="bg-gradient-to-r from-green-600 to-emerald-700 px-8 py-8 text-white shadow-md">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Quản lý phản ánh</h1>
+              <p className="mt-2 text-sm text-green-50">
+                Theo dõi phản ánh, cập nhật trạng thái hoàn thành và gửi phản hồi cho người dùng.
+              </p>
             </div>
+            <button
+              onClick={fetchFeedbacks}
+              className="inline-flex items-center justify-center rounded-lg bg-white/15 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-white/20"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Tải lại dữ liệu
+            </button>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Green-themed Search and Filters */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm p-4 border border-gray-100">
-          <div className="flex flex-col md:flex-row md:items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-2 md:mb-0">
-              <div className="bg-green-100 p-1.5 rounded-md mr-2">
-                <Filter className="w-5 h-5 text-green-600" />
-              </div>
-              Tìm kiếm & Bộ lọc
-            </h2>
-            <div className="flex items-center text-sm text-gray-600">
-              <Clock className="w-4 h-4 mr-1.5 text-green-500" />
-              <span>Cập nhật lần cuối: {new Date().toLocaleTimeString()}</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="col-span-2">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Tìm phản hồi</label>
+        <main className="p-8">
+          <div className="mb-6 grid gap-4 rounded-2xl bg-white p-5 shadow-sm border border-gray-100 lg:grid-cols-[1.5fr_240px]">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Tìm kiếm</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="w-5 h-5 text-green-400" />
-                </div>
-                <input 
-                  id="search"
-                  type="text"
-                  placeholder="Tìm theo tên, email, chủ đề hoặc nội dung"
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
+                <Search className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                <input
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Tìm theo người gửi, email, tiêu đề hoặc nội dung..."
+                  className="w-full rounded-xl border border-gray-300 py-3 pl-10 pr-10 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
                 {searchQuery && (
-                  <button 
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
-                    onClick={() => setSearchQuery('')}
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    aria-label="Xóa từ khóa"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="h-4 w-4" />
                   </button>
                 )}
               </div>
             </div>
-            
+
             <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Lọc trạng thái</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">Trạng thái</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <ArrowUpDown className="w-4 h-4 text-green-400" />
-                </div>
-                <select 
-                  id="status-filter"
-                  className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 appearance-none transition-all duration-200"
-                  value={filters.status}
-                  onChange={(e) => setFilters({...filters, status: e.target.value})}
+                <ArrowUpDown className="absolute left-3 top-3.5 h-4 w-4 text-gray-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  className="w-full appearance-none rounded-xl border border-gray-300 bg-white py-3 pl-10 pr-10 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 >
                   <option value="all">Tất cả trạng thái</option>
                   <option value="pending">Đang chờ</option>
                   <option value="completed">Đã hoàn thành</option>
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                  <ChevronDown className="w-4 h-4 text-green-400" />
-                </div>
+                <ChevronDown className="absolute right-3 top-3.5 h-4 w-4 text-gray-400" />
               </div>
             </div>
           </div>
-          
-          <div className="mt-3 flex flex-wrap gap-2">
-            {searchQuery && (
-              <div className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-3 py-1 text-sm">
-                <span>Tìm kiếm: {searchQuery}</span>
-                <button onClick={() => setSearchQuery('')} className="ml-1 text-green-500 hover:text-green-700">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-            {filters.status !== 'all' && (
-              <div className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-3 py-1 text-sm">
-                <span>
-                  Trạng thái: {filters.status === 'pending' ? 'Đang chờ' : filters.status === 'completed' ? 'Đã hoàn thành' : 'Tất cả trạng thái'}
-                </span>
-                <button onClick={() => setFilters({...filters, status: 'all'})} className="ml-1 text-green-500 hover:text-green-700">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Green-themed Feedback List */}
-        <div className="mb-4 flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center">
-            <div className="bg-green-100 p-1.5 rounded-md mr-2">
-              <Inbox className="w-5 h-5 text-green-600" />
-            </div>
-            Danh sách phản hồi
-            <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm">
-              {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? 'mục' : 'mục'}
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center text-xl font-semibold text-gray-900">
+              <span className="mr-3 rounded-lg bg-green-100 p-2">
+                <Inbox className="h-5 w-5 text-green-700" />
+              </span>
+              Danh sách phản ánh
+            </h2>
+            <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
+              {filteredFeedbacks.length}/{feedbacks.length} mục
             </span>
-          </h2>
-        </div>
-        
-        {filteredFeedbacks.length > 0 ? (
-          <div className="bg-white shadow-md overflow-hidden rounded-lg border border-gray-200">
-            <div className="overflow-x-auto w-full">
-              <table className="min-w-full divide-y divide-gray-200 w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-green-50 to-green-100">
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-1/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('name')}>
-                      <div className="flex items-center space-x-2">
-                        <User className="w-4 h-4 text-green-500" />
-                        <span>Người gửi</span>
-                        {sortConfig.key === 'name' && (
-                          <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
-                            ▼
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-2/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('subject')}>
-                      <div className="flex items-center space-x-2">
-                        <MessageSquare className="w-4 h-4 text-green-500" />
-                        <span>Chủ đề</span>
-                        {sortConfig.key === 'subject' && (
-                          <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
-                            ▼
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-1/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('dateSubmitted')}>
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-green-500" />
-                        <span>Ngày</span>
-                        {sortConfig.key === 'dateSubmitted' && (
-                          <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
-                            ▼
-                          </span>
-                        )}
-                      </div>
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-1/12">
-                      <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-green-500" />
-                        <span>Trạng thái</span>
-                      </div>
-                    </th>
-                    <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-1/6">
-                      <div className="flex items-center space-x-2">
-                        <Bell className="w-4 h-4 text-green-500" />
-                        <span>Hành động</span>
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredFeedbacks.map((feedback, index) => (
-                    <tr key={feedback._id} className={`hover:bg-green-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700 font-semibold">
-                            {feedback.name.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">{feedback.name}</div>
-                            <div className="text-sm text-gray-500 flex items-center">
-                              <Mail className="w-3 h-3 mr-1 text-green-400" />
-                              {feedback.email}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="max-w-md">
-                          <div className="text-sm font-medium text-gray-900 truncate">{feedback.subject}</div>
-                          <div className="text-sm text-gray-900 truncate mt-1">{feedback.message}</div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatDate(feedback.dateSubmitted).split(',')[0]}</div>
-                        <div className="text-xs text-gray-500 mt-1">{formatDate(feedback.dateSubmitted).split(',')[1]}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          feedback.completed 
-                            ? 'bg-green-100 text-green-800 border border-green-200' 
-                            : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                        }`}>
-                          <span className={`w-2 h-2 rounded-full mr-1 ${feedback.completed ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                          {feedback.completed ? 'Đã hoàn thành' : 'Đang chờ'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex flex-wrap gap-1.5">
-                          <button
-                            onClick={() => handleStatusChange(feedback._id, !feedback.completed)}
-                            disabled={submitting}
-                            className={`inline-flex items-center px-2.5 py-1 border text-xs font-medium rounded-md shadow-sm transition-all duration-200 ${
-                              feedback.completed 
-                                ? 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900' 
-                                : 'border-green-600 bg-green-600 text-white hover:bg-green-700'
-                            }`}
-                          >
-                            <Check className="w-3 h-3 mr-1" />
-                            {feedback.completed ? 'Gỡ đánh dấu hoàn thành' : 'Đánh dấu hoàn thành'}
-                          </button>
-                          <button
-                            onClick={() => openReplyModal(feedback)}
-                            className="inline-flex items-center px-2.5 py-1 border border-green-600 bg-green-600 text-xs font-medium rounded-md text-white hover:bg-green-700 shadow-sm transition-all duration-200"
-                          >
-                            <Mail className="w-3 h-3 mr-1 text-white" />
-                            Trả lời
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="bg-green-50 px-4 py-3 border-t border-gray-200 text-sm text-gray-600 flex justify-between items-center">
-              <div>
-                Hiển thị {filteredFeedbacks.length} trong số {feedbacks.length} phản hồi
-              </div>
-              <div className="flex items-center">
-                <span className="mr-2">Sắp xếp theo:</span>
-                <select 
-                  className="border border-gray-300 rounded-md text-xs py-1 px-2 focus:ring-green-500 focus:border-green-500"
-                  value={sortConfig.key}
-                  onChange={(e) => toggleSort(e.target.value)}
-                >
-                  <option value="dateSubmitted">Ngày</option>
-                  <option value="name">Người gửi</option>
-                  <option value="subject">Chủ đề</option>
-                </select>
-              </div>
-            </div>
           </div>
-        ) : (
-          <div className="bg-white shadow-md rounded-lg p-8 text-center border border-gray-200">
-            <div className="flex flex-col items-center justify-center max-w-md mx-auto">
-              <div className="w-20 h-20 rounded-lg bg-green-50 flex items-center justify-center mb-4">
-                <Inbox className="h-10 w-10 text-green-500" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy phản hồi</h3>
-              <p className="text-gray-600 mb-6">
-                {searchQuery || filters.status !== 'all' 
-                  ? 'Không có kết quả phù hợp với tìm kiếm hoặc bộ lọc hiện tại. Hãy thử điều chỉnh các tiêu chí.'
-                  : 'Hiện chưa có phản hồi người dùng trong hệ thống.'}
+
+          {filteredFeedbacks.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-10 text-center shadow-sm">
+              <Inbox className="mx-auto h-10 w-10 text-green-500" />
+              <h3 className="mt-4 text-lg font-semibold text-gray-900">
+                Không có phản ánh phù hợp
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Hãy thay đổi từ khóa tìm kiếm hoặc bộ lọc để xem thêm dữ liệu.
               </p>
-              <button 
-                onClick={fetchFeedbacks}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-green-50">
+                    <tr>
+                      <th
+                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 cursor-pointer"
+                        onClick={() => toggleSort("name")}
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-green-700" />
+                          Người gửi
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 cursor-pointer"
+                        onClick={() => toggleSort("subject")}
+                      >
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="h-4 w-4 text-green-700" />
+                          Nội dung
+                        </div>
+                      </th>
+                      <th
+                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 cursor-pointer"
+                        onClick={() => toggleSort("dateSubmitted")}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-green-700" />
+                          Ngày gửi
+                        </div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-green-700" />
+                          Trạng thái
+                        </div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-700">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredFeedbacks.map((feedback, index) => {
+                      const statusBusy = busyKey === `status-${feedback._id}`;
+                      const replyBusy = busyKey === `reply-${feedback._id}`;
+                      const deleteBusy = busyKey === `delete-${feedback._id}`;
+                      const initial = feedback.name?.charAt(0)?.toUpperCase() || "?";
+
+                      return (
+                        <tr
+                          key={feedback._id}
+                          className={index % 2 === 0 ? "bg-white" : "bg-gray-50/70"}
+                        >
+                          <td className="px-4 py-4 align-top">
+                            <div className="flex items-start gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 font-semibold text-green-700">
+                                {initial}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  {feedback.name || "Người dùng"}
+                                </p>
+                                <p className="mt-1 flex items-center text-sm text-gray-500">
+                                  <Mail className="mr-1 h-3.5 w-3.5 text-green-600" />
+                                  {feedback.email || "Chưa có email"}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 align-top">
+                            <p className="text-sm font-semibold text-gray-900">
+                              {feedback.subject || "Không có tiêu đề"}
+                            </p>
+                            <p className="mt-1 max-w-xl whitespace-pre-line text-sm text-gray-600">
+                              {feedback.message || "Không có nội dung"}
+                            </p>
+                            {feedback.replied && feedback.replyDate && (
+                              <p className="mt-2 text-xs font-medium text-green-700">
+                                Đã phản hồi lúc {formatDate(feedback.replyDate)}
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-4 py-4 align-top text-sm text-gray-700">
+                            {formatDate(feedback.dateSubmitted)}
+                          </td>
+                          <td className="px-4 py-4 align-top">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                                feedback.completed
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              <span
+                                className={`mr-2 h-2 w-2 rounded-full ${
+                                  feedback.completed ? "bg-green-600" : "bg-yellow-500"
+                                }`}
+                              />
+                              {feedback.completed
+                                ? STATUS_LABELS.completed
+                                : STATUS_LABELS.pending}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 align-top">
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                onClick={() =>
+                                  handleStatusChange(feedback, !feedback.completed)
+                                }
+                                disabled={Boolean(busyKey)}
+                                className={`inline-flex items-center rounded-lg px-3 py-2 text-xs font-medium transition ${
+                                  feedback.completed
+                                    ? "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                                    : "bg-green-600 text-white hover:bg-green-700"
+                                } disabled:cursor-not-allowed disabled:opacity-60`}
+                              >
+                                {statusBusy ? (
+                                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Check className="mr-1.5 h-3.5 w-3.5" />
+                                )}
+                                {feedback.completed
+                                  ? "Chuyển về đang chờ"
+                                  : "Đánh dấu hoàn thành"}
+                              </button>
+
+                              <button
+                                onClick={() => openReplyModal(feedback)}
+                                disabled={Boolean(busyKey)}
+                                className="inline-flex items-center rounded-lg bg-emerald-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {replyBusy ? (
+                                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                                )}
+                                Trả lời
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteFeedback(feedback)}
+                                disabled={Boolean(busyKey)}
+                                className="inline-flex items-center rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                {deleteBusy ? (
+                                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                )}
+                                Xóa
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {replyModal.open && replyModal.feedback && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          style={{ paddingLeft: "16rem" }}
+        >
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between rounded-t-2xl bg-green-600 px-6 py-4 text-white">
+              <div>
+                <h3 className="text-lg font-semibold">Trả lời phản ánh</h3>
+                <p className="text-sm text-green-50">
+                  Phản hồi sẽ được lưu vào hệ thống và gửi thông báo cho người dùng.
+                </p>
+              </div>
+              <button
+                onClick={closeReplyModal}
+                className="rounded-full bg-white/10 p-2 hover:bg-white/20"
+                aria-label="Đóng cửa sổ phản hồi"
               >
-                <RefreshCw className="w-4 h-4 mr-2 text-white" />
-                Tải lại dữ liệu
+                <X className="h-4 w-4" />
               </button>
             </div>
-          </div>
-        )}
-      </main>
 
-      {/* Green-themed Reply Modal */}
-      {replyModal.isOpen && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300" style={{ paddingLeft: '16rem' }}>
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-4 transform transition-all duration-300 ease-out animate-fade-in-up">
-            <div className="bg-green-600 text-white">
-              <div className="px-5 py-3 flex justify-between items-center">
-                <h3 className="text-lg font-semibold flex items-center">
-                  <div className="bg-white bg-opacity-20 p-1.5 rounded-md mr-2">
-                    <Mail className="h-5 w-5 text-white" />
-                  </div>
-                  Trả lời phản hồi
-                </h3>
-                <button 
-                  onClick={closeReplyModal} 
-                  className="text-white hover:text-white hover:bg-white hover:bg-opacity-20 p-1.5 rounded-full transition-colors"
-                  aria-label="Close modal"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+            <div className="space-y-5 px-6 py-5">
+              <div className="rounded-xl bg-gray-50 p-4">
+                <p className="text-sm font-semibold text-gray-900">
+                  {replyModal.feedback.subject}
+                </p>
+                <p className="mt-2 text-sm text-gray-600 whitespace-pre-line">
+                  {replyModal.feedback.message}
+                </p>
+                <div className="mt-3 grid gap-2 text-xs text-gray-500 sm:grid-cols-2">
+                  <p>Người gửi: {replyModal.feedback.name || "Người dùng"}</p>
+                  <p>Email: {replyModal.feedback.email || "Chưa có email"}</p>
+                  <p>Ngày gửi: {formatDate(replyModal.feedback.dateSubmitted)}</p>
+                  <p>
+                    Trạng thái hiện tại:{" "}
+                    {replyModal.feedback.completed
+                      ? STATUS_LABELS.completed
+                      : STATUS_LABELS.pending}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  Nội dung phản hồi
+                </label>
+                <textarea
+                  value={replyText}
+                  onChange={(event) => setReplyText(event.target.value)}
+                  rows={6}
+                  placeholder="Nhập nội dung phản hồi cho người dùng..."
+                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none transition focus:border-green-500 focus:ring-2 focus:ring-green-100"
+                />
+                <p className="mt-2 text-right text-xs text-gray-500">
+                  {replyText.trim().length} ký tự
+                </p>
               </div>
             </div>
-            
-            <div className="p-5">
-              <div className="mb-5 bg-green-50 p-4 rounded-lg border border-green-100">
-                <div className="flex items-start mb-3">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center text-green-700 font-semibold mr-3">
-                    {replyModal.feedback.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{replyModal.feedback.name}</p>
-                    <p className="text-xs text-gray-900 flex items-center">
-                      <Mail className="w-3 h-3 mr-1 text-green-500" />
-                      {replyModal.feedback.email}
-                    </p>
-                    <p className="text-xs text-gray-900 flex items-center mt-1">
-                      <Calendar className="w-3 h-3 mr-1 text-green-500" />
-                      {formatDate(replyModal.feedback.dateSubmitted)}
-                    </p>
-                  </div>
-                  <div className="flex-shrink-0">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      replyModal.feedback.completed 
-                        ? 'bg-green-100 text-gray-800 border border-green-900' 
-                        : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1 ${replyModal.feedback.completed ? 'bg-green-900' : 'bg-yellow-500'}`}></span>
-                      {replyModal.feedback.completed ? 'Đã hoàn thành' : 'Đang chờ'}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="border-b border-green-200 mb-3 pb-3">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Chủ đề:</h4>
-                  <p className="text-sm text-gray-800">{replyModal.feedback.subject}</p>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Nội dung:</h4>
-                  <p className="text-sm text-gray-800 whitespace-pre-line">{replyModal.feedback.message}</p>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <label htmlFor="reply" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                  <div className="bg-green-100 p-1 rounded-md mr-1.5">
-                    <MessageSquare className="w-4 h-4 text-gray-900" />
-                  </div>
-                  Phản hồi của bạn
-                </label>
-                <div className="relative">
-                  <textarea
-                    id="reply"
-                    rows={5}
-                    className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900"
-                    placeholder="Nhập phản hồi tại đây..."
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                  ></textarea>
-                  <div className="absolute bottom-2 right-2 text-xs bg-green-100 text-gray-700 px-2 py-0.5 rounded-full">
-                    {replyText.length} characters
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center text-sm text-gray-800">
-                  <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-green-500" />
-                  <span>Phản hồi của bạn sẽ được gửi từ <span className="font-medium text-gray-700">venkatmadhu232@gmail.com</span></span>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center pt-3 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
-                  {!replyModal.feedback.completed && 
-                    <div className="flex items-center bg-green-50 px-2 py-1 rounded-md">
-                      <CheckCircle className="w-4 h-4 mr-1.5 text-green-600" />
-                      <span>Phản hồi này sẽ được đánh dấu là đã hoàn thành</span>
-                    </div>
-                  }
-                </div>
-                <div className="flex space-x-2 mt-2">
-                  <button
-                    onClick={closeReplyModal}
-                    className="px-3 py-1.5 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 shadow-sm transition-all duration-200 font-medium"
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    onClick={handleSendReply}
-                    disabled={!replyText.trim() || submitting}
-                    className={`px-4 py-1.5 rounded-md bg-green-600 text-white hover:bg-green-700 shadow-sm transition-all duration-200 flex items-center font-medium ${
-                      !replyText.trim() || submitting ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  >
-                    {submitting ? (
-                      <>
-                        <Loader2 className="animate-spin w-4 h-4 mr-1.5 text-white" />
-                        Đang gửi...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4 mr-1.5 text-white" />
-                        Gửi phản hồi
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
+
+            <div className="flex justify-end gap-3 rounded-b-2xl border-t border-gray-100 bg-gray-50 px-6 py-4">
+              <button
+                onClick={closeReplyModal}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSendReply}
+                disabled={!replyText.trim() || Boolean(busyKey)}
+                className="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {busyKey === `reply-${replyModal.feedback._id}` ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                Gửi phản hồi
+              </button>
             </div>
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 };

@@ -2,9 +2,36 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { Download, Loader2, AlertCircle, MapPin, CalendarDays as Calendar, FileText, Bell, CheckCircle, X, Map, Filter, Search, SlidersHorizontal, Tag, Clock, ArrowUpDown, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { BACKEND_URL } from "../utils/apiConfig";
 // Import jsPDF directly - no dynamic imports
 import { jsPDF } from "jspdf";
 import { motion, AnimatePresence } from "framer-motion";
+
+const DAMAGE_TYPE_LABELS = {
+  pothole: "Ổ gà",
+  alligator_crack: "Nứt da cá sấu",
+  lateral_crack: "Nứt ngang",
+  longitudinal_crack: "Nứt dọc",
+  edge_crack: "Nứt mép đường",
+  rutting: "Hằn lún",
+  raveling: "Bong tróc",
+  other: "Khác",
+};
+
+const REVIEW_STATUS_LABELS = {
+  approved: "Đã duyệt",
+  rejected: "Từ chối",
+  "in-progress": "Đang xử lý",
+  pending: "Chờ duyệt",
+};
+
+const SEVERITY_LABELS = {
+  low: "Thấp",
+  moderate: "Trung bình",
+  high: "Cao",
+  severe: "Nghiêm trọng",
+  unknown: "Chưa xác định",
+};
 
 const Report = () => {
   const navigate = useNavigate();
@@ -20,6 +47,7 @@ const Report = () => {
   const [activeTab, setActiveTab] = useState("View Reports");
   const [highlightedEntryId, setHighlightedEntryId] = useState(null);
   const highlightedEntryRef = useRef(null);
+  const pdfFontBinaryRef = useRef(null);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "timestamp", direction: "desc" });
@@ -99,6 +127,24 @@ const Report = () => {
     
     return Array.from(types);
   }, [entries]);
+
+  const getStatusLabel = (entryStatus, reviewStatus) => {
+    if (reviewStatus && REVIEW_STATUS_LABELS[reviewStatus]) {
+      return REVIEW_STATUS_LABELS[reviewStatus];
+    }
+
+    const statusMap = {
+      Pending: "Đang chờ",
+      Critical: "Nghiêm trọng",
+      Processed: "Đã xử lý",
+      Resolved: "Đã hoàn thành",
+    };
+
+    return statusMap[entryStatus] || entryStatus || "Đang chờ";
+  };
+
+  const getSeverityLabel = (severity) =>
+    SEVERITY_LABELS[severity] || severity || "Chưa xác định";
   
   // Extract unique statuses from entries
   const uniqueStatuses = useMemo(() => {
@@ -117,13 +163,50 @@ const Report = () => {
   }, [entries]);
   
   // Format damage type for display
+  const formatDamageTypeLabel = (type) => {
+    if (!type) return "Chưa xác định";
+    return DAMAGE_TYPE_LABELS[type]
+      || type.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  };
+
   const formatDamageType = (type) => {
-    if (!type) return 'Unknown';
+    if (!type) return "Không xác định";
     return type.replace(/_/g, ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
   
+  const arrayBufferToBinaryString = (buffer) => {
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    let binary = "";
+
+    for (let index = 0; index < bytes.length; index += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+    }
+
+    return binary;
+  };
+
+  const ensurePdfFont = async (doc) => {
+    if (!pdfFontBinaryRef.current) {
+      const fontResponse = await fetch("/fonts/DejaVuSerif.ttf");
+      if (!fontResponse.ok) {
+        throw new Error("Không thể tải phông chữ tiếng Việt cho tệp PDF.");
+      }
+
+      const fontBuffer = await fontResponse.arrayBuffer();
+      pdfFontBinaryRef.current = arrayBufferToBinaryString(fontBuffer);
+    }
+
+    doc.addFileToVFS("DejaVuSerif.ttf", pdfFontBinaryRef.current);
+    doc.addFont("DejaVuSerif.ttf", "DejaVuSerif", "normal");
+    doc.addFont("DejaVuSerif.ttf", "DejaVuSerif", "bold");
+    doc.addFont("DejaVuSerif.ttf", "DejaVuSerif", "italic");
+    doc.addFont("DejaVuSerif.ttf", "DejaVuSerif", "bolditalic");
+    doc.setFont("DejaVuSerif", "normal");
+  };
+
   // Apply filters and search
   useEffect(() => {
     if (entries.length === 0) return;
@@ -391,8 +474,8 @@ const Report = () => {
       }
       
       // Fetch the road image
-      console.log("Fetching image from:", `http://localhost:5000/${imagePath}`);
-      const response = await fetch(`http://localhost:5000/${imagePath}`);
+      console.log("Fetching image from:", `${BACKEND_URL}/${imagePath}`);
+      const response = await fetch(`${BACKEND_URL}/${imagePath}`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
@@ -409,11 +492,11 @@ const Report = () => {
       
       reader.onerror = (error) => {
         console.error("FileReader error:", error);
-        alert("Error reading image file. Please try again.");
+        alert("Không thể đọc tệp ảnh. Vui lòng thử lại.");
         setDownloadingIndex(null);
       };
       
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         try {
           console.log("Image loaded as base64");
           const base64Image = reader.result;
@@ -425,6 +508,7 @@ const Report = () => {
             unit: 'mm',
             format: 'a4'
           });
+          await ensurePdfFont(doc);
           
           // Add watermark if logo is available
           if (logoBase64) {
@@ -501,7 +585,7 @@ const Report = () => {
           doc.setFontSize(16);
           doc.setFont(undefined, 'normal');
           doc.setTextColor(39, 174, 96); // Green color
-          doc.text("Road Condition Assessment Report", 35, 28);
+          doc.text("Báo cáo hiện trạng mặt đường", 35, 28);
           
           // Decorative horizontal line with gradient effect
           for (let i = 0; i < 190; i++) {
@@ -521,9 +605,13 @@ const Report = () => {
           // Report metadata
           doc.setFontSize(10);
           doc.setTextColor(100, 100, 100);
-          doc.text(`Report ID: ${entry._id || 'N/A'}`, 10, 42);
-          doc.text(`Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, 10, 48);
-          doc.text(`Reported: ${new Date(timestamp || Date.now()).toLocaleDateString()} at ${new Date(timestamp || Date.now()).toLocaleTimeString()}`, 10, 54);
+          doc.text(`Mã báo cáo: ${entry._id || 'N/A'}`, 10, 42);
+          doc.text(`Ngày xuất: ${new Date().toLocaleDateString("vi-VN")} ${new Date().toLocaleTimeString("vi-VN")}`, 10, 48);
+          doc.text(`Ngày gửi: ${new Date(timestamp || Date.now()).toLocaleDateString("vi-VN")} ${new Date(timestamp || Date.now()).toLocaleTimeString("vi-VN")}`, 10, 54);
+
+          const reviewStatus = entry.reviewStatus;
+          const statusLabel = getStatusLabel(status, reviewStatus);
+          const severityLabel = getSeverityLabel(severity);
           
           // Severity and status badges
           const severityColor = 
@@ -533,9 +621,9 @@ const Report = () => {
             severity === 'low' ? [46, 204, 113] : [149, 165, 166];
           
           const statusColor = 
-            status === 'Resolved' ? [46, 204, 113] : 
-            status === 'Critical' ? [231, 76, 60] : 
-            status === 'Pending' ? [52, 152, 219] : [149, 165, 166];
+            status === 'Resolved' || reviewStatus === 'approved' ? [46, 204, 113] : 
+            status === 'Critical' || reviewStatus === 'rejected' ? [231, 76, 60] : 
+            status === 'Processed' || reviewStatus === 'in-progress' ? [52, 152, 219] : [149, 165, 166];
           
           // Severity badge
           doc.setFillColor(...severityColor);
@@ -543,13 +631,13 @@ const Report = () => {
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(10);
           doc.setFont(undefined, 'bold');
-          doc.text(severity?.toUpperCase() || 'UNKNOWN', 170, 45, { align: 'center' });
+          doc.text(severityLabel.toUpperCase(), 170, 45, { align: 'center' });
           
           // Status badge
           doc.setFillColor(...statusColor);
           doc.roundedRect(150, 50, 40, 8, 2, 2, 'F');
           doc.setTextColor(255, 255, 255);
-          doc.text(status?.toUpperCase() || 'PENDING', 170, 55, { align: 'center' });
+          doc.text(statusLabel.toUpperCase(), 170, 55, { align: 'center' });
           
           // Location section - removed background fill to show watermark
           // Add subtle divider line instead of box
@@ -570,19 +658,19 @@ const Report = () => {
           doc.setTextColor(44, 62, 80);
           doc.setFontSize(14);
           doc.setFont(undefined, 'bold');
-          doc.text("Location Details", 18, 75);
+          doc.text("Chi tiết vị trí", 18, 75);
           doc.setFont(undefined, 'normal');
           doc.setFontSize(10);
           
           // Address with icon
           doc.setTextColor(52, 73, 94);
-          doc.text("Address:", 15, 85);
-          const wrappedAddress = doc.splitTextToSize(`${address || 'Unknown location'}`, 160);
+          doc.text("Địa chỉ:", 15, 85);
+          const wrappedAddress = doc.splitTextToSize(`${address || "Chưa xác định"}`, 160);
           doc.text(wrappedAddress, 40, 85);
           
           // Coordinates with icon
-          doc.text("Coordinates:", 15, 95);
-          doc.text(`${latitude || 'N/A'}, ${longitude || 'N/A'}`, 40, 95);
+          doc.text("Tọa độ:", 15, 95);
+          doc.text(`${latitude || "N/A"}, ${longitude || "N/A"}`, 40, 95);
           
           // Damage assessment section - removed background fill to show watermark
           // Add subtle divider line instead of box
@@ -597,30 +685,24 @@ const Report = () => {
           doc.setTextColor(44, 62, 80);
           doc.setFontSize(14);
           doc.setFont(undefined, 'bold');
-          doc.text("Damage Assessment", 18, 115);
+          doc.text("Đánh giá hư hỏng", 18, 115);
           doc.setFont(undefined, 'normal');
           doc.setFontSize(10);
           
           // Format damage types if available
-          let damageTypesText = "Not specified";
+          let damageTypesText = "Chưa xác định";
           if (damageType && Array.isArray(damageType) && damageType.length > 0) {
-            damageTypesText = damageType.map(type => 
-              type.replace(/_/g, ' ').split(' ').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-              ).join(' ')
-            ).join(', ');
+            damageTypesText = damageType.map((type) => formatDamageTypeLabel(type)).join(', ');
           } else if (damageType && typeof damageType === 'string') {
-            damageTypesText = damageType.replace(/_/g, ' ').split(' ').map(word => 
-              word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
+            damageTypesText = formatDamageTypeLabel(damageType);
           }
           
           doc.setTextColor(52, 73, 94);
-          doc.text("Damage Type:", 15, 125);
+          doc.text("Loại hư hỏng:", 15, 125);
           doc.text(damageTypesText, 40, 125);
           
-          doc.text("Severity Level:", 15, 135);
-          doc.text(severity?.charAt(0).toUpperCase() + severity?.slice(1) || 'Unknown', 40, 135);
+          doc.text("Mức độ nghiêm trọng:", 15, 135);
+          doc.text(severityLabel, 56, 135);
           
           // Image section - removed background fill to show watermark
           // Add subtle divider line instead of box
@@ -635,7 +717,7 @@ const Report = () => {
           doc.setTextColor(44, 62, 80);
           doc.setFontSize(14);
           doc.setFont(undefined, 'bold');
-          doc.text("Visual Evidence", 18, 160);
+          doc.text("Hình ảnh minh chứng", 18, 160);
           
           console.log("Adding image to PDF with enhanced styling...");
           try {
@@ -750,11 +832,16 @@ const Report = () => {
             doc.setFontSize(9);
             doc.setTextColor(100, 100, 100);
             doc.setFont(undefined, 'italic');
-            doc.text("Road condition captured on " + new Date(timestamp || Date.now()).toLocaleDateString(), 105, y + h + 8, { align: 'center' });
+            doc.text(
+              "Hình ảnh được ghi nhận ngày " + new Date(timestamp || Date.now()).toLocaleDateString("vi-VN"),
+              105,
+              y + h + 8,
+              { align: 'center' }
+            );
             
           } catch (imgError) {
             console.error("Error adding image to PDF:", imgError);
-            doc.text("Image could not be added to PDF. Please check the console for details.", 20, 180);
+            doc.text("Không thể chèn hình ảnh vào tệp PDF.", 20, 180);
           }
           
           // Footer
@@ -764,16 +851,16 @@ const Report = () => {
           
           doc.setFontSize(8);
           doc.setTextColor(100, 100, 100);
-          doc.text("© Inspectify Road Assessment System", 105, 285, { align: 'center' });
-          doc.text(`Page 1 of 1`, 190, 285, { align: 'right' });
+          doc.text("© Inspectify - Hệ thống giám sát mặt đường", 105, 285, { align: 'center' });
+          doc.text(`Trang 1 / 1`, 190, 285, { align: 'right' });
   
           console.log("Saving PDF...");
-          doc.save(`Inspectify_Road_Report_${entry._id ? entry._id.substring(0, 8) : index}_${new Date().toISOString().slice(0, 10)}.pdf`);
+          doc.save(`Bao_cao_hien_trang_duong_${entry._id ? entry._id.substring(0, 8) : index}_${new Date().toISOString().slice(0, 10)}.pdf`);
           console.log("PDF generated successfully");
-          alert("PDF generated successfully!");
+          alert("Đã xuất tệp PDF thành công.");
         } catch (pdfError) {
           console.error("Error generating PDF content:", pdfError);
-          alert("Failed to generate PDF. Please try again.");
+          alert("Không thể tạo tệp PDF. Vui lòng thử lại.");
         } finally {
           setDownloadingIndex(null);
         }
@@ -782,7 +869,7 @@ const Report = () => {
       reader.readAsDataURL(blob);
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert(`Failed to generate PDF: ${error.message}`);
+      alert(`Không thể xuất PDF: ${error.message}`);
       setDownloadingIndex(null);
     }
   };
@@ -792,7 +879,7 @@ const Report = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
-          <p className="text-lg font-medium text-gray-600">Loading reports...</p>
+          <p className="text-lg font-medium text-gray-600">Đang tải báo cáo...</p>
         </div>
       </div>
     );
@@ -805,13 +892,13 @@ const Report = () => {
           <div className="flex items-center justify-center mb-4">
             <AlertCircle className="h-12 w-12 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-center text-gray-800 mb-2">Error Loading Reports</h2>
+          <h2 className="text-xl font-bold text-center text-gray-800 mb-2">Lỗi tải báo cáo</h2>
           <p className="text-gray-600 text-center">{error}</p>
           <button 
             onClick={() => window.location.reload()}
             className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-black font-medium py-2 px-4 rounded-lg transition-colors"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       </div>
@@ -823,8 +910,8 @@ const Report = () => {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">No Reports Found</h2>
-          <p className="text-gray-600">No road detection entries are currently available.</p>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Chưa có báo cáo</h2>
+          <p className="text-gray-600">Hiện chưa có báo cáo tình trạng đường nào khả dụng.</p>
         </div>
       </div>
     );
@@ -846,7 +933,7 @@ const Report = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Severity Filter */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Severity</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Mức độ</h3>
                   <div className="space-y-2">
                     {['low', 'moderate', 'high', 'severe'].map(sev => (
                       <label key={sev} className="flex items-center">
@@ -876,7 +963,7 @@ const Report = () => {
                 
                 {/* Status Filter */}
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Status</h3>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h3>
                   <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
                     {uniqueStatuses.map(status => (
                       <label key={status} className="flex items-center">
@@ -886,7 +973,14 @@ const Report = () => {
                           checked={filters.status.includes(status)}
                           onChange={() => toggleFilter('status', status)}
                         />
-                        <span className="text-sm text-gray-700 capitalize">{status}</span>
+                        <span className="text-sm text-gray-700 capitalize">
+                          {{
+                            approved: "Đã duyệt",
+                            rejected: "Từ chối",
+                            "in-progress": "Đang xử lý",
+                            pending: "Chờ duyệt",
+                          }[status] || status}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -904,7 +998,7 @@ const Report = () => {
                           checked={filters.damageType.includes(type)}
                           onChange={() => toggleFilter('damageType', type)}
                         />
-                        <span className="text-sm text-gray-700">{formatDamageType(type)}</span>
+                        <span className="text-sm text-gray-700">{formatDamageTypeLabel(type)}</span>
                       </label>
                     ))}
                   </div>
@@ -943,10 +1037,10 @@ const Report = () => {
                   className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
                 >
                   <X size={14} className="mr-1" />
-                  Reset Filters
+                  Xóa bộ lọc
                 </button>
                 <div className="text-sm text-gray-600">
-                  Showing <span className="font-medium">{filteredEntries.length}</span> of <span className="font-medium">{entries.length}</span> reports
+                  Hiển thị <span className="font-medium">{filteredEntries.length}</span> trên <span className="font-medium">{entries.length}</span> báo cáo
                 </div>
               </div>
             </div>
@@ -959,12 +1053,21 @@ const Report = () => {
   // Handle review submission
   const handleReviewSubmit = async () => {
     if (!userId) {
-      setError("User ID not available. Please log in again.");
+      setError("Không xác định được tài khoản. Vui lòng đăng nhập lại.");
       return;
     }
     
     if (!reviewingId) {
-      setError("No image selected for review.");
+      setError("Chưa chọn báo cáo để duyệt.");
+      return;
+    }
+
+    const nextStatusLabel = REVIEW_STATUS_LABELS[reviewForm.status] || reviewForm.status;
+    const confirmed = window.confirm(
+      `Bạn có chắc muốn chuyển trạng thái báo cáo sang "${nextStatusLabel}" và gửi thông báo cho người dùng không?`
+    );
+
+    if (!confirmed) {
       return;
     }
     
@@ -1000,7 +1103,7 @@ const Report = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit review');
+        throw new Error(errorData.error || errorData.message || 'Không thể cập nhật duyệt báo cáo.');
       }
 
       const responseData = await response.json();
@@ -1035,10 +1138,10 @@ const Report = () => {
       });
       
       // Show success message
-      alert("Review submitted successfully!");
+      alert("Đã cập nhật trạng thái báo cáo và gửi thông báo thành công.");
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert(`Failed to submit review: ${error.message}`);
+      alert(`Không thể cập nhật trạng thái báo cáo: ${error.message}`);
     }
   };
 
@@ -1090,7 +1193,7 @@ const Report = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Review Road Issue
+                Đánh giá sự cố mặt đường
               </h3>
               <button 
                 onClick={() => setShowReviewModal(false)}
@@ -1108,17 +1211,17 @@ const Report = () => {
                   {entry.imagePath ? (
                     <img 
                       src={`http://localhost:5000/${entry.imagePath}`} 
-                      alt="Road issue" 
+                      alt="Sự cố mặt đường"
                       className="w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
                         console.error("Error loading image:", entry.imagePath);
                         e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Available";
-                        e.target.alt = "Image not available";
+                        e.target.alt = "Không có ảnh";
                       }}
                     />
                   ) : (
                     <div className="w-full h-56 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <p className="text-gray-500">No image available</p>
+                      <p className="text-gray-500">Không có ảnh</p>
                     </div>
                   )}
                   
@@ -1132,8 +1235,8 @@ const Report = () => {
                   <div className="bg-gray-50 p-3 rounded-lg flex items-start">
                     <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                     <div className="ml-2">
-                      <p className="text-sm font-medium text-gray-900">Location</p>
-                      <p className="text-sm text-gray-800">{entry.address || 'Address not available'}</p>
+                      <p className="text-sm font-medium text-gray-900">Vị trí</p>
+                      <p className="text-sm text-gray-800">{entry.address || "Chưa có địa chỉ"}</p>
                     </div>
                   </div>
                   
@@ -1142,7 +1245,7 @@ const Report = () => {
                       <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                     </svg>
                     <div className="ml-2">
-                      <p className="text-sm font-medium text-gray-900">Coordinates</p>
+                      <p className="text-sm font-medium text-gray-900">Tọa độ</p>
                       <p className="text-sm text-gray-800 font-mono">{entry.latitude || 'N/A'}, {entry.longitude || 'N/A'}</p>
                     </div>
                   </div>
@@ -1150,7 +1253,7 @@ const Report = () => {
                   <div className="bg-gray-50 p-3 rounded-lg flex items-start">
                     <Calendar className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                     <div className="ml-2">
-                      <p className="text-sm font-medium text-gray-900">Detected</p>
+                      <p className="text-sm font-medium text-gray-900">Thời gian ghi nhận</p>
                       <p className="text-sm text-gray-800">{new Date(entry.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
@@ -1161,10 +1264,10 @@ const Report = () => {
                 <div className="bg-blue-50 p-4 rounded-lg mb-4">
                   <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center">
                     <CheckCircle className="h-4 w-4 mr-1 text-blue-600" />
-                    Review Information
+                    Thông tin duyệt báo cáo
                   </h4>
                   <p className="text-sm text-gray-800 font-medium">
-                    Please review this road issue and provide your assessment. This information will be used to prioritize repairs.
+                    Vui lòng xem xét sự cố mặt đường này và đưa ra đánh giá. Thông tin này sẽ được dùng để ưu tiên xử lý.
                   </p>
                 </div>
                 
@@ -1173,17 +1276,17 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Review Status
+                    Trạng thái duyệt
                   </label>
                   <select
                     value={reviewForm.status}
                     onChange={(e) => setReviewForm({...reviewForm, status: e.target.value})}
                     className="w-full rounded-lg border border-gray-300 py-2.5 px-3 bg-white text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   >
-                    <option value="approved">Approved - Issue Confirmed</option>
-                    <option value="rejected">Rejected - Not a Valid Issue</option>
-                    <option value="in-progress">In Progress - Under Repair</option>
-                    <option value="pending">Pending - Further Review Needed</option>
+                    <option value="approved">Đã duyệt - Xác nhận là sự cố hợp lệ</option>
+                    <option value="rejected">Từ chối - Không phải sự cố hợp lệ</option>
+                    <option value="in-progress">Đang xử lý - Đang sửa chữa</option>
+                    <option value="pending">Chờ duyệt - Cần xem xét thêm</option>
                   </select>
                 </div>
                 
@@ -1192,18 +1295,18 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                     </svg>
-                    Damage Types (Select Multiple)
+                    Loại hư hỏng (chọn nhiều)
                   </label>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {[
-                      { value: 'pothole', label: 'Pothole' },
-                      { value: 'alligator_crack', label: 'Alligator Crack' },
-                      { value: 'lateral_crack', label: 'Lateral Crack' },
-                      { value: 'longitudinal_crack', label: 'Longitudinal Crack' },
-                      { value: 'edge_crack', label: 'Edge Crack' },
-                      { value: 'rutting', label: 'Rutting' },
-                      { value: 'raveling', label: 'Raveling' },
-                      { value: 'other', label: 'Other' }
+                      { value: 'pothole', label: 'Ổ gà' },
+                      { value: 'alligator_crack', label: 'Nứt da cá sấu' },
+                      { value: 'lateral_crack', label: 'Nứt ngang' },
+                      { value: 'longitudinal_crack', label: 'Nứt dọc' },
+                      { value: 'edge_crack', label: 'Nứt mép đường' },
+                      { value: 'rutting', label: 'Hằn lún' },
+                      { value: 'raveling', label: 'Bong tróc' },
+                      { value: 'other', label: 'Khác' }
                     ].map(option => (
                       <div key={option.value} className="flex items-center">
                         <input
@@ -1240,17 +1343,17 @@ const Report = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      AI Detection Visualization
+                      Minh họa phát hiện bằng AI
                     </label>
                     <div className="rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                       <img 
                         src={entry.boundingBoxImage} 
-                        alt="AI detection visualization" 
+                        alt="Minh họa phát hiện bằng AI"
                         className="w-full h-auto"
                       />
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      This visualization shows the AI-detected damage areas on the road surface.
+                      Hình ảnh này hiển thị các khu vực hư hỏng mà AI đã nhận diện trên bề mặt đường.
                     </p>
                   </div>
                 )}
@@ -1262,23 +1365,23 @@ const Report = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
-                      Detection Metrics
+                      Chỉ số phát hiện
                     </label>
                     <div className="bg-gray-50 rounded-lg p-3 text-xs">
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <span className="font-medium text-gray-700">Detections:</span>
+                          <span className="font-medium text-gray-700">Số vùng phát hiện:</span>
                           <span className="ml-1 text-gray-600">{entry.analysisResult.detections.length}</span>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-700">Confidence:</span>
+                          <span className="font-medium text-gray-700">Độ tin cậy:</span>
                           <span className="ml-1 text-gray-600">
                             {Math.round(entry.analysisResult.detections.reduce((sum, det) => sum + (det.confidence || 0), 0) / 
                               entry.analysisResult.detections.length * 100)}%
                           </span>
                         </div>
                         <div>
-                          <span className="font-medium text-gray-900">Processing:</span>
+                          <span className="font-medium text-gray-900">Xử lý:</span>
                           <span className="ml-1 text-gray-800">
                             {entry.analysisResult.processing_time || entry.analysisResult.clientProcessingTime || 'N/A'} sec
                           </span>
@@ -1297,7 +1400,7 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    Severity Level
+                    Mức độ nghiêm trọng
                   </label>
                   <div className="grid grid-cols-4 gap-2 mb-2">
                     {['low', 'moderate', 'high', 'severe'].map((severity) => (
@@ -1325,7 +1428,7 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
                     </svg>
-                    Recommended Action
+                    Hành động đề xuất
                   </label>
                   <div className="relative">
                     <input
@@ -1339,7 +1442,7 @@ const Report = () => {
                         }));
                       }}
                       className="w-full rounded-lg border border-gray-300 py-2.5 px-3 pl-9 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-                      placeholder="e.g., Patch pothole, Resurface road section"
+                      placeholder="Ví dụ: Vá ổ gà, thảm lại đoạn đường"
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1353,36 +1456,36 @@ const Report = () => {
                       onClick={() => {
                         setReviewForm(prevState => ({
                           ...prevState,
-                          recommendedAction: "Schedule repair within 1 week"
+                          recommendedAction: "Lên lịch sửa trong 1 tuần"
                         }));
                       }}
                       className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded-md transition-colors"
                     >
-                      Repair in 1 week
+                      Sửa trong 1 tuần
                     </button>
                     <button 
                       type="button" 
                       onClick={() => {
                         setReviewForm(prevState => ({
                           ...prevState,
-                          recommendedAction: "Immediate repair needed"
+                          recommendedAction: "Cần sửa chữa ngay"
                         }));
                       }}
                       className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded-md transition-colors"
                     >
-                      Immediate repair
+                      Sửa ngay
                     </button>
                     <button 
                       type="button" 
                       onClick={() => {
                         setReviewForm(prevState => ({
                           ...prevState,
-                          recommendedAction: "Monitor condition"
+                          recommendedAction: "Tiếp tục theo dõi"
                         }));
                       }}
                       className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded-md transition-colors"
                     >
-                      Monitor condition
+                      Theo dõi thêm
                     </button>
                   </div>
                 </div>
@@ -1392,7 +1495,7 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Review Notes
+                    Ghi chú duyệt
                   </label>
                   <div className="relative">
                     <textarea
@@ -1414,7 +1517,7 @@ const Report = () => {
                         });
                       }}
                       rows={4}
-                      placeholder="Add any additional notes about this road issue..."
+                      placeholder="Thêm ghi chú nếu cần cho sự cố này..."
                       className="w-full rounded-lg border border-gray-300 py-2.5 px-3 text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                       id="review-notes"
                       name="review-notes"
@@ -1423,7 +1526,7 @@ const Report = () => {
                   </div>
                   <div className="mt-2 flex justify-between items-center">
                     <p className="text-xs text-gray-500">
-                      These notes will be visible to maintenance crews and other reviewers.
+                      Ghi chú này sẽ hiển thị cho đội xử lý và người duyệt liên quan.
                     </p>
                     <div className="text-xs text-gray-500">
                       {reviewForm.notes ? reviewForm.notes.length : 0} characters
@@ -1443,12 +1546,12 @@ const Report = () => {
                       }}
                       className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded-md transition-colors"
                     >
-                      Safety concern
+                      Cần xử lý gấp
                     </button>
                     <button 
                       type="button" 
                       onClick={() => {
-                        const template = "Minor damage, should be monitored for deterioration.";
+                        const template = "Hư hỏng nhẹ, cần tiếp tục theo dõi để tránh xuống cấp thêm.";
                         setReviewForm({
                           ...reviewForm,
                           notes: template
@@ -1456,7 +1559,7 @@ const Report = () => {
                       }}
                       className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 py-1 px-2 rounded-md transition-colors"
                     >
-                      Minor damage
+                      Hư hỏng nhẹ
                     </button>
                   </div>
                 </div>
@@ -1470,14 +1573,14 @@ const Report = () => {
               className="px-4 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-gray-700 font-medium shadow-sm transition-all flex items-center justify-center"
             >
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              Hủy
             </button>
             <button
               onClick={handleReviewSubmit}
               className="px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 rounded-lg text-white font-medium shadow-sm hover:shadow transition-all flex items-center justify-center"
             >
               <CheckCircle className="h-4 w-4 mr-2 text-white" />
-              Submit Review & Notify
+              Cập nhật trạng thái và thông báo
             </button>
           </div>
         </div>
@@ -1496,11 +1599,11 @@ const Report = () => {
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
               <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Confirm Deletion</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Xác nhận xóa</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete this report? <br />
+              Bạn có chắc muốn xóa báo cáo này không? <br />
               <span className="font-medium text-gray-700">{deleteModal.entryName}</span><br />
-              This action cannot be undone.
+              Hành động này không thể hoàn tác.
             </p>
           </div>
           
@@ -1510,7 +1613,7 @@ const Report = () => {
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
               disabled={deleting}
             >
-              Cancel
+              Hủy
             </button>
             <button
               onClick={handleDeleteConfirm}
@@ -1520,12 +1623,12 @@ const Report = () => {
               {deleting ? (
                 <>
                   <Loader2 className="animate-spin mr-2 h-4 w-4" />
-                  Deleting...
+                  Đang xóa...
                 </>
               ) : (
                 <>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  Xóa
                 </>
               )}
             </button>
@@ -1552,7 +1655,7 @@ const Report = () => {
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-gray-900 bg-gradient-to-r from-blue-600 to-green-500 bg-clip-text text-transparent">
-                    Road Condition Reports
+                    Báo cáo hiện trạng mặt đường
                   </h1>
                   <p className="mt-2 text-gray-600 flex items-center">
                     <FileText className="h-4 w-4 mr-2 text-blue-500" />
@@ -1563,14 +1666,14 @@ const Report = () => {
                 <div className="mt-4 md:mt-0 flex items-center space-x-3">
                   <div className="inline-flex items-center px-4 py-2 bg-blue-50 border border-blue-200 rounded-full text-sm font-medium text-blue-700">
                     <Calendar className="h-4 w-4 mr-2" />
-                    Last updated: {new Date().toLocaleDateString()}
+                    Cập nhật: {new Date().toLocaleDateString()}
                   </div>
                   <button 
                     onClick={() => setShowFilters(!showFilters)}
                     className={`inline-flex items-center px-4 py-2 ${showFilters ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'} border rounded-full text-sm font-medium transition-colors`}
                   >
                     <Filter className="h-4 w-4 mr-2" />
-                    {showFilters ? 'Hide Filters' : 'Show Filters'}
+                    {showFilters ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
                     {showFilters ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
                   </button>
                 </div>
@@ -1581,7 +1684,7 @@ const Report = () => {
                 <div className="relative flex-grow">
                   <input
                     type="text"
-                    placeholder="Search by location, damage type, or ID..."
+                    placeholder="Tìm theo vị trí, loại hư hỏng hoặc mã báo cáo..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
@@ -1616,7 +1719,7 @@ const Report = () => {
                     className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                   >
                     <AlertCircle className="h-4 w-4 mr-2 text-gray-500" />
-                    Severity
+                    Mức độ
                     {sortConfig.key === 'severity' && (
                       sortConfig.direction === 'asc' ? 
                         <ChevronUp className="h-4 w-4 ml-1 text-blue-500" /> : 
@@ -1646,7 +1749,7 @@ const Report = () => {
                     <div className="relative">
                       <img
                         src={`http://localhost:5000/${entry.imagePath}`}
-                        alt={`Detected road issue ${index + 1}`}
+                        alt={`Sự cố mặt đường ${index + 1}`}
                         className="w-full h-56 object-cover"
                         loading="lazy"
                         onError={(e) => {
@@ -1664,9 +1767,9 @@ const Report = () => {
                           entry.reviewStatus === 'rejected' ? 'bg-red-100 text-red-800' :
                           'bg-blue-100 text-blue-800'
                         }`}>
-                          {entry.reviewStatus === 'approved' ? 'Approved' :
-                           entry.reviewStatus === 'rejected' ? 'Rejected' :
-                           'Pending Review'}
+                          {entry.reviewStatus === 'approved' ? 'Đã duyệt' :
+                           entry.reviewStatus === 'rejected' ? 'Từ chối' :
+                           'Chờ duyệt'}
                         </span>
                       </div>
                       
@@ -1678,7 +1781,7 @@ const Report = () => {
                           entry.severity === 'low' ? 'bg-green-100 text-green-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {entry.severity || 'Unknown'} Severity
+                          {entry.severity || "Không xác định"} mức độ
                         </span>
                       </div>
                     </div>
@@ -1690,7 +1793,7 @@ const Report = () => {
                             <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs font-bold mr-2">
                               {index + 1}
                             </span>
-                            Road Issue
+                            Sự cố mặt đường
                           </h2>
                           <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
                             ID: {entry._id?.substring(0, 8) || 'N/A'}
@@ -1698,7 +1801,7 @@ const Report = () => {
                         </div>
                         <p className="text-sm text-gray-500 mt-1 flex items-center">
                           <Calendar className="h-3.5 w-3.5 mr-1 text-blue-500" />
-                          {new Date(entry.timestamp).toLocaleDateString()} at {new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          {new Date(entry.timestamp).toLocaleDateString()} lúc {new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </p>
                       </div>
                       
@@ -1706,8 +1809,8 @@ const Report = () => {
                         <div className="flex items-start bg-gray-50 p-2 rounded-lg">
                           <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                           <div className="ml-2">
-                            <p className="text-sm font-medium text-gray-900">Location</p>
-                            <p className="text-sm text-gray-800 break-words">{entry.address || 'Address not available'}</p>
+                            <p className="text-sm font-medium text-gray-900">Vị trí</p>
+                            <p className="text-sm text-gray-800 break-words">{entry.address || "Chưa có địa chỉ"}</p>
                           </div>
                         </div>
                   
@@ -1716,7 +1819,7 @@ const Report = () => {
                             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                           </svg>
                           <div className="ml-2">
-                            <p className="text-sm font-medium text-gray-900">Coordinates</p>
+                            <p className="text-sm font-medium text-gray-900">Tọa độ</p>
                             <p className="text-sm text-gray-800 font-mono">
                               {entry.latitude || 'N/A'}, {entry.longitude || 'N/A'}
                             </p>
@@ -1729,7 +1832,7 @@ const Report = () => {
                               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>
                             <div className="ml-2">
-                              <p className="text-sm font-medium text-gray-700">Damage Types</p>
+                              <p className="text-sm font-medium text-gray-700">Loại hư hỏng</p>
                               <div className="flex flex-wrap gap-1 mt-1">
                                 {Array.isArray(entry.damageType) 
                                   ? entry.damageType.map(type => (
@@ -1754,14 +1857,14 @@ const Report = () => {
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
-                    AI Analysis Results
+                    Kết quả phân tích AI
                   </p>
                   
                   <div className="mt-2 space-y-2">
                     {/* Severity indicator */}
                     {entry.severityLevel && (
                       <div className="flex items-center">
-                        <span className="text-xs font-medium text-gray-700 w-24">Severity:</span>
+                        <span className="text-xs font-medium text-gray-700 w-24">Mức độ:</span>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           entry.severityLevel === 'severe' || entry.severityLevel === 'high' ? 'bg-red-100 text-red-800' :
                           entry.severityLevel === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
@@ -1776,7 +1879,7 @@ const Report = () => {
                     {/* Damage types */}
                     {entry.damageType && (
                       <div className="flex items-start">
-                        <span className="text-xs font-medium text-gray-700 w-24 mt-1">Damage Types:</span>
+                        <span className="text-xs font-medium text-gray-700 w-24 mt-1">Loại hư hỏng:</span>
                         <div className="flex flex-wrap gap-1">
                           {Array.isArray(entry.damageType) 
                             ? entry.damageType.map(type => (
@@ -1801,9 +1904,9 @@ const Report = () => {
                     {/* Processing time */}
                     {entry.analysisResult?.clientProcessingTime && (
                       <div className="flex items-center">
-                        <span className="text-xs font-medium text-gray-700 w-24">Processing:</span>
+                        <span className="text-xs font-medium text-gray-700 w-24">Xử lý:</span>
                         <span className="text-xs text-gray-600">
-                          {entry.analysisResult.clientProcessingTime} seconds
+                          {entry.analysisResult.clientProcessingTime} giây
                         </span>
                       </div>
                     )}
@@ -1811,9 +1914,9 @@ const Report = () => {
                     {/* Detection count */}
                     {entry.analysisResult?.detections && (
                       <div className="flex items-center">
-                        <span className="text-xs font-medium text-gray-700 w-24">Detections:</span>
+                        <span className="text-xs font-medium text-gray-700 w-24">Vùng phát hiện:</span>
                         <span className="text-xs text-gray-600">
-                          {entry.analysisResult.detections.length} issues found
+                          {entry.analysisResult.detections.length} vùng được phát hiện
                         </span>
                       </div>
                     )}
@@ -1821,7 +1924,7 @@ const Report = () => {
                     {/* Review notes */}
                     {entry.reviewNotes && (
                       <div className="mt-2 pt-2 border-t border-blue-200">
-                        <span className="text-xs font-medium text-gray-700 block mb-1">Review Notes:</span>
+                        <span className="text-xs font-medium text-gray-700 block mb-1">Ghi chú duyệt:</span>
                         <p className="text-xs text-blue-700 bg-white p-2 rounded border border-blue-100">
                           {entry.reviewNotes}
                         </p>
@@ -1832,11 +1935,11 @@ const Report = () => {
                   {/* Bounding box image if available */}
                   {entry.boundingBoxImage && (
                     <div className="mt-3 pt-3 border-t border-blue-200">
-                      <p className="text-xs font-medium text-gray-700 mb-1">AI Detection Visualization:</p>
+                      <p className="text-xs font-medium text-gray-700 mb-1">Minh họa phát hiện bằng AI:</p>
                       <div className="relative rounded-lg overflow-hidden border border-blue-200">
                         <img 
                           src={entry.boundingBoxImage} 
-                          alt="AI detection visualization" 
+                          alt="Minh họa phát hiện bằng AI"
                           className="w-full h-auto"
                           onError={(e) => {
                             console.error("Error loading bounding box image");
@@ -1862,12 +1965,12 @@ const Report = () => {
                     {downloadingIndex === index ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating...
+                        Đang tạo...
                       </>
                     ) : (
                       <>
                         <Download className="h-4 w-4 mr-2 text-white" />
-                        Download
+                        Xuất PDF
                       </>
                     )}
                   </button>
@@ -1877,7 +1980,7 @@ const Report = () => {
                     className="flex items-center justify-center px-4 py-2.5 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm hover:shadow"
                   >
                     <Map className="h-4 w-4 mr-2 text-white" />
-                    View on Map
+                    Xem trên bản đồ
                   </button>
                   
                   {/* Second row of buttons */}
@@ -1886,7 +1989,7 @@ const Report = () => {
                     className="flex items-center justify-center px-4 py-2.5 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm"
                   >
                     <Trash2 className="h-4 w-4 mr-2 text-white" />
-                    Delete
+                    Xóa
                   </button>
                 
                   <button
@@ -1906,20 +2009,20 @@ const Report = () => {
               }) : (
                 <div className="col-span-full text-center py-12">
                   <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900">No matching reports found</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Không tìm thấy báo cáo phù hợp</h3>
                   {entries.length > 0 ? (
                     <div>
-                      <p className="mt-2 text-gray-500">No reports match your current filters.</p>
+                      <p className="mt-2 text-gray-500">Không có báo cáo nào khớp với bộ lọc hiện tại.</p>
                       <button 
                         onClick={resetFilters}
                         className="mt-4 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors inline-flex items-center"
                       >
                         <X className="h-4 w-4 mr-2" />
-                        Reset Filters
+                        Xóa bộ lọc
                       </button>
                     </div>
                   ) : (
-                    <p className="mt-2 text-gray-500">No road condition reports are currently available.</p>
+                    <p className="mt-2 text-gray-500">Hiện chưa có báo cáo tình trạng mặt đường nào.</p>
                   )}
                 </div>
               )}
@@ -1936,9 +2039,9 @@ const Report = () => {
           <div className="flex items-center justify-center mb-4">
             <AlertCircle className="h-12 w-12 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-center text-gray-800 mb-2">Error Rendering Reports</h2>
+          <h2 className="text-xl font-bold text-center text-gray-800 mb-2">Lỗi hiển thị báo cáo</h2>
           <p className="text-gray-600 text-center">
-            There was an error displaying the reports. Please try refreshing the page.
+            Đã xảy ra lỗi khi hiển thị báo cáo. Vui lòng tải lại trang và thử lại.
           </p>
           <pre className="mt-4 p-3 bg-gray-100 rounded text-xs overflow-auto max-h-40">
             {renderError.toString()}

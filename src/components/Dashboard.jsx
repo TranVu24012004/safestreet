@@ -219,7 +219,7 @@ const Dashboard = ({ activeTab }) => {
         setLoading(false);
       },
       () => {
-        setError("Location access denied. Please enable location services.");
+        setError("Không thể truy cập vị trí. Vui lòng bật dịch vụ định vị.");
         setLoading(false);
       },
       { enableHighAccuracy: true }
@@ -334,7 +334,7 @@ const Dashboard = ({ activeTab }) => {
         return;
       }
     } else if (!location) {
-      setError("Current location not available. Please allow location access or toggle to 'Manual' to enter the address manually.");
+      setError("Không có vị trí hiện tại. Vui lòng cho phép truy cập vị trí hoặc chuyển sang chế độ 'Thủ công' để nhập địa chỉ.");
       return;
     }
     
@@ -408,7 +408,7 @@ const Dashboard = ({ activeTab }) => {
     // Ensure required fields exist
     if (!notification.details.status) notification.details.status = 'pending';
     if (!notification.details.severity) notification.details.severity = 'low';
-    if (!notification.details.address) notification.details.address = 'Unknown location';
+    if (!notification.details.address) notification.details.address = "Không xác định";
     if (!notification.details.date) notification.details.date = new Date().toLocaleDateString();
     
     return notification;
@@ -991,7 +991,7 @@ const Dashboard = ({ activeTab }) => {
           <div className="mt-3 text-sm text-gray-900 space-y-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <p className="text-xs text-gray-500 font-semibold">Status</p>
+                <p className="text-xs text-gray-500 font-semibold">Trạng thái</p>
                 <p className={`font-medium ${
                   latestNotification.details?.status === 'approved' ? 'text-green-600' :
                   latestNotification.details?.status === 'rejected' ? 'text-red-600' :
@@ -1000,11 +1000,11 @@ const Dashboard = ({ activeTab }) => {
                 }`}>
                   {latestNotification.details?.status ? 
                     (latestNotification.details.status.charAt(0).toUpperCase() + latestNotification.details.status.slice(1)) : 
-                    'Pending'}
+                    "Đang chờ"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-semibold">Severity</p>
+                <p className="text-xs text-gray-500 font-semibold">Mức độ</p>
                 <p className={`font-medium ${
                   latestNotification.details?.severity === 'severe' ? 'text-red-600' :
                   latestNotification.details?.severity === 'high' ? 'text-orange-600' :
@@ -1013,32 +1013,32 @@ const Dashboard = ({ activeTab }) => {
                 }`}>
                   {latestNotification.details?.severity ? 
                     (latestNotification.details.severity.charAt(0).toUpperCase() + latestNotification.details.severity.slice(1)) : 
-                    'Unknown'}
+                    "Không xác định"}
                 </p>
               </div>
             </div>
             
             {latestNotification.details?.notes && (
               <div className="pt-1">
-                <p className="text-xs text-gray-500 font-semibold">Notes</p>
+                <p className="text-xs text-gray-500 font-semibold">Ghi chú</p>
                 <p className="text-gray-900">{latestNotification.details.notes}</p>
               </div>
             )}
             
             {latestNotification.details?.action && (
               <div className="pt-1">
-                <p className="text-xs text-gray-500 font-semibold">Recommended Action</p>
+                <p className="text-xs text-gray-500 font-semibold">Hành động đề xuất</p>
                 <p className="text-gray-900">{latestNotification.details.action}</p>
               </div>
             )}
             
             <div className="pt-1">
-              <p className="text-xs text-gray-500 font-semibold">Location</p>
-              <p className="text-gray-900 truncate">{latestNotification.details?.address || 'Unknown location'}</p>
+              <p className="text-xs text-gray-500 font-semibold">Vị trí</p>
+              <p className="text-gray-900 truncate">{latestNotification.details?.address || "Không xác định"}</p>
             </div>
             
             <div className="pt-1">
-              <p className="text-xs text-gray-500 font-semibold">Review Date</p>
+              <p className="text-xs text-gray-500 font-semibold">Ngày duyệt</p>
               <p className="text-gray-900">{latestNotification.details?.date || new Date().toLocaleDateString()}</p>
             </div>
           </div>
@@ -1047,7 +1047,7 @@ const Dashboard = ({ activeTab }) => {
             <div className="mt-4">
               <img 
                 src={`http://localhost:5000/${latestNotification.imagePath}`} 
-                alt="Reviewed road" 
+                alt="Ảnh mặt đường đã đánh giá"
                 className="w-full h-40 object-cover rounded-lg shadow-sm"
               />
             </div>
@@ -1062,7 +1062,7 @@ const Dashboard = ({ activeTab }) => {
               }}
               className="px-3 py-1.5 text-green-600 hover:text-green-800 text-sm font-medium"
             >
-              View All Notifications
+              Xem tất cả thông báo
             </button>
             <button 
               onClick={() => {
@@ -1087,14 +1087,14 @@ const Dashboard = ({ activeTab }) => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[80vh] flex flex-col">
           <div className="p-5 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-xl font-bold text-gray-800">Notification History</h3>
+            <h3 className="text-xl font-bold text-gray-800">Lịch sử thông báo</h3>
             <div className="flex gap-2">
               {notifications.length > 0 && (
                 <button 
                   onClick={clearAllNotifications}
                   className="px-3 py-1 text-sm text-red-600 hover:text-red-800"
                 >
-                  Clear All
+                  Xóa tất cả
                 </button>
               )}
               <button 
@@ -1112,7 +1112,7 @@ const Dashboard = ({ activeTab }) => {
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <Bell className="h-8 w-8 text-gray-400" />
                 </div>
-                <p className="text-gray-500">No notifications yet</p>
+                <p className="text-gray-500">Chưa có thông báo nào</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -1144,7 +1144,7 @@ const Dashboard = ({ activeTab }) => {
                           </p>
                           {notification.details?.address && (
                             <p className="text-xs text-gray-700 mt-1">
-                              <span className="font-semibold">Location:</span> {notification.details.address}
+                              <span className="font-semibold">Vị trí:</span> {notification.details.address}
                             </p>
                           )}
                         </div>
@@ -1173,7 +1173,7 @@ const Dashboard = ({ activeTab }) => {
                         }}
                         className="text-sm text-green-600 hover:text-green-800"
                       >
-                        View Details
+                        Xem chi tiết
                       </button>
                     </div>
                   </div>
@@ -1216,12 +1216,12 @@ return (
           <div className="bg-green-600 text-white p-2 rounded-lg">
             <Camera className="h-6 w-6" />
           </div>
-          Road Issue Detection
+          Phát hiện sự cố mặt đường
         </h2>
         
         <div className="flex items-center gap-2 bg-green-100 px-4 py-2 rounded-lg text-green-800">
           <Clock className="h-4 w-4" />
-          <span className="text-sm font-medium">Last updated: {new Date().toLocaleTimeString()}</span>
+          <span className="text-sm font-medium">Cập nhật lúc: {new Date().toLocaleTimeString()}</span>
         </div>
       </div>
 
@@ -1231,7 +1231,7 @@ return (
           <div className="p-4 bg-gradient-to-r from-green-600 to-green-500 text-white">
             <h3 className="font-semibold flex items-center gap-2">
               <Camera className="h-4 w-4" />
-              Live Camera Feed
+              Xem trước camera trực tiếp
             </h3>
           </div>
           
@@ -1249,8 +1249,8 @@ return (
                   <div className="bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
                     <Camera className="h-8 w-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-400 text-lg">Camera preview will appear here</p>
-                  <p className="text-gray-500 text-sm mt-2">Click "Start Camera" to begin</p>
+                  <p className="text-gray-400 text-lg">Khung xem camera sẽ hiển thị tại đây</p>
+                  <p className="text-gray-500 text-sm mt-2">Nhấn "Bật camera" để bắt đầu</p>
                 </div>
               )}
               <canvas ref={canvasRef} className="hidden" />
@@ -1274,12 +1274,12 @@ return (
                 {streamActive ? (
                   <>
                     <X className="h-4 w-4" />
-                    Stop Camera
+                    Tắt camera
                   </>
                 ) : (
                   <>
                     <Camera className="h-4 w-4" />
-                    Start Camera
+                    Bật camera
                   </>
                 )}
               </button>
@@ -1305,13 +1305,13 @@ return (
           <div className="flex justify-between items-center mb-4">
             <h4 className="text-lg font-semibold flex items-center gap-2 text-gray-800">
               <MapPin className="h-5 w-5 text-red-500" />
-              Location Information
+              Thông tin vị trí
             </h4>
             
             {/* Toggle between current location and manual address */}
             <div className="flex items-center gap-2">
               <span className={`text-sm ${!useManualAddress ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
-                Current
+                Hiện tại
               </span>
               <button 
                 onClick={() => {
@@ -1331,7 +1331,7 @@ return (
                 />
               </button>
               <span className={`text-sm ${useManualAddress ? 'font-semibold text-green-600' : 'text-gray-500'}`}>
-                Manual
+                Thủ công
               </span>
             </div>
           </div>
@@ -1341,22 +1341,22 @@ return (
             loading ? (
               <div className="flex items-center gap-3 text-gray-500">
                 <div className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full"></div>
-                <p>Fetching your location...</p>
+                <p>Đang lấy vị trí của bạn...</p>
               </div>
             ) : location ? (
               <div className="space-y-3">
                 <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <p className="text-xs text-gray-500 mb-1">Address</p>
+                  <p className="text-xs text-gray-500 mb-1">Địa chỉ</p>
                   <p className="text-gray-800">{location.address}</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">Latitude</p>
+                    <p className="text-xs text-gray-500 mb-1">Vĩ độ</p>
                     <p className="text-gray-800 font-medium">{location.lat}</p>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">Longitude</p>
+                    <p className="text-xs text-gray-500 mb-1">Kinh độ</p>
                     <p className="text-gray-800 font-medium">{location.lon}</p>
                   </div>
                 </div>
@@ -1365,8 +1365,8 @@ return (
               <div className="bg-red-50 p-4 rounded-lg border border-red-100 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-red-800 font-medium">Location Error</p>
-                  <p className="text-red-600 text-sm mt-1">{error || "Unable to access your location. Please enable location services."}</p>
+                  <p className="text-red-800 font-medium">Lỗi vị trí</p>
+                  <p className="text-red-600 text-sm mt-1">{error || "Không thể truy cập vị trí của bạn. Vui lòng bật dịch vụ định vị."}</p>
                 </div>
               </div>
             )
@@ -1374,7 +1374,7 @@ return (
             // Manual address section
             <div className="space-y-4">
               <div className="flex flex-col">
-                <label htmlFor="manual-address" className="text-sm text-gray-600 mb-1">Enter Address</label>
+                <label htmlFor="manual-address" className="text-sm text-gray-600 mb-1">Nhập địa chỉ</label>
                 <div className="flex gap-2">
                   <input
                     id="manual-address"
@@ -1385,7 +1385,7 @@ return (
                       // Clear error when user starts typing a new address
                       if (error) setError("");
                     }}
-                    placeholder="Enter the location where the image was taken"
+                    placeholder="Nhập nơi chụp bức ảnh này"
                     className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                   <button
@@ -1411,17 +1411,17 @@ return (
               {manualAddressCoords && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <p className="text-xs text-gray-500 mb-1">Verified Address</p>
+                    <p className="text-xs text-gray-500 mb-1">Địa chỉ đã xác nhận</p>
                     <p className="text-gray-800">{manualAddressCoords.address}</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 mb-1">Latitude</p>
+                      <p className="text-xs text-gray-500 mb-1">Vĩ độ</p>
                       <p className="text-gray-800 font-medium">{manualAddressCoords.lat}</p>
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                      <p className="text-xs text-gray-500 mb-1">Longitude</p>
+                      <p className="text-xs text-gray-500 mb-1">Kinh độ</p>
                       <p className="text-gray-800 font-medium">{manualAddressCoords.lon}</p>
                     </div>
                   </div>
@@ -1435,7 +1435,7 @@ return (
         <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-800">
             <FileText className="h-5 w-5 text-green-500" />
-            Upload Road Image
+            Tải ảnh mặt đường
           </h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1451,9 +1451,9 @@ return (
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                   <FileText className="h-8 w-8 text-green-600" />
                 </div>
-                <p className="text-gray-800 font-medium text-lg">Click to upload a road image</p>
-                <p className="text-gray-500 text-sm mt-2">or drag and drop</p>
-                <p className="text-gray-400 text-xs mt-4">Supports JPG, PNG, JPEG</p>
+                <p className="text-gray-800 font-medium text-lg">Nhấn để tải ảnh mặt đường lên</p>
+                <p className="text-gray-500 text-sm mt-2">hoặc kéo thả tệp vào đây</p>
+                <p className="text-gray-400 text-xs mt-4">Hỗ trợ JPG, PNG, JPEG</p>
               </label>
             </div>
             
@@ -1463,7 +1463,7 @@ return (
                 <div className="relative w-full h-full">
                   <img
                     src={URL.createObjectURL(selectedFile)}
-                    alt="Preview"
+                    alt="Xem trước ảnh"
                     className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 flex justify-between items-center">
@@ -1474,7 +1474,7 @@ return (
               ) : (
                 <div className="text-center p-6 text-gray-400">
                   <Camera className="h-12 w-12 mx-auto mb-2 opacity-30" />
-                  <p>Image preview will appear here</p>
+                  <p>Ảnh xem trước sẽ hiển thị tại đây</p>
                 </div>
               )}
             </div>
@@ -1494,12 +1494,12 @@ return (
           {loading ? (
             <>
               <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-              Processing...
+              Đang xử lý...
             </>
           ) : (
             <>
               <Search className="h-4 w-4" />
-              Analyze Road Condition
+              Phân tích tình trạng mặt đường
             </>
           )}
         </button>
@@ -1509,7 +1509,7 @@ return (
           <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex items-start gap-3 animate-fadeIn">
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-red-800 font-medium">Error</p>
+              <p className="text-red-800 font-medium">Lỗi</p>
               <p className="text-red-600 text-sm mt-1">{error}</p>
             </div>
           </div>
@@ -1537,25 +1537,25 @@ return (
               <div className="flex-1">
                 <h4 className="text-xl font-bold text-gray-900">
                   {prediction.label.toLowerCase() === "road"
-                    ? "Road Detected"
-                    : "Not a Road"}
+                    ? "Đã phát hiện mặt đường"
+                    : "Không phải ảnh mặt đường"}
                 </h4>
                 <p className="text-sm mt-2 text-gray-700">
                   {prediction.label.toLowerCase() === "road"
-                    ? "Our AI has confirmed this image contains a road. The image has been processed successfully."
-                    : "Our AI could not identify a road in this image. Please ensure you're uploading an image of a road."}
+                    ? "AI đã xác nhận đây là ảnh có chứa mặt đường và quá trình phân tích đã hoàn tất."
+                    : "AI không nhận diện được mặt đường trong ảnh này. Vui lòng tải lên ảnh chụp mặt đường rõ hơn."}
                 </p>
                 
                 <div className="mt-4 pt-3 border-t border-gray-200">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-xs text-gray-500 mb-1">Classification</p>
+                      <p className="text-xs text-gray-500 mb-1">Phân loại</p>
                       <p className={`font-medium ${
                         prediction.label.toLowerCase() === "road"
                           ? "text-green-600"
                           : "text-red-600"
                       }`}>
-                        {prediction.label.toLowerCase() === "road" ? "Road" : "Not a Road"}
+                        {prediction.label.toLowerCase() === "road" ? "Mặt đường" : "Không phải mặt đường"}
                       </p>
                     </div>
                     
@@ -1573,7 +1573,7 @@ return (
                   {prediction.label !== "road" && (
                     <div className="mt-4 bg-amber-50 p-3 rounded-lg border border-amber-100">
                       <p className="text-amber-800 text-sm">
-                        <span className="font-medium">Suggestion:</span> Try uploading a clearer image of a road surface.
+                        <span className="font-medium">Gợi ý:</span> Hãy thử tải lên ảnh mặt đường rõ hơn để hệ thống phân tích chính xác hơn.
                       </p>
                     </div>
                   )}
@@ -1597,18 +1597,18 @@ return (
           <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-3 rounded-xl shadow-md">
             <FaHome className="h-6 w-6" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-800">Road Monitoring Dashboard</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Bảng điều khiển giám sát mặt đường</h2>
         </div>
         <p className="text-gray-600 pl-1">
-          Welcome back, <span className="font-semibold text-indigo-700">{userName}</span>! 
-          Here's your real-time road condition monitoring overview.
+          Chào mừng quay lại, <span className="font-semibold text-indigo-700">{userName}</span>!
+          Đây là tổng quan theo dõi tình trạng mặt đường theo thời gian thực.
         </p>
       </div>
       
       <div className="flex flex-wrap items-center gap-3">
         <div className="bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100 text-gray-700 flex items-center gap-2">
           <Clock className="h-4 w-4 text-indigo-600" />
-          <span className="text-sm font-medium">Last updated: {new Date().toLocaleTimeString()}</span>
+          <span className="text-sm font-medium">Cập nhật lúc: {new Date().toLocaleTimeString()}</span>
         </div>
         <button 
           onClick={fetchRoadStats}
@@ -1616,7 +1616,7 @@ return (
           disabled={statsLoading}
         >
           <RefreshCw className={`h-4 w-4 ${statsLoading ? 'animate-spin' : ''}`} />
-          <span className="text-sm font-medium">Refresh</span>
+          <span className="text-sm font-medium">Làm mới</span>
         </button>
       </div>
     </div>
@@ -1626,8 +1626,8 @@ return (
       <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-emerald-500">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold mb-2 text-gray-800">Approved Reports</h2>
-            <p className="text-sm text-gray-500">Verified road issues</p>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Báo cáo đã duyệt</h2>
+            <p className="text-sm text-gray-500">Sự cố đã xác minh</p>
           </div>
           <div className="bg-emerald-100 p-3 rounded-full">
             <CheckCircle className="h-6 w-6 text-emerald-600" />
@@ -1641,7 +1641,7 @@ return (
           )}
           <div className="mt-2 text-sm">
             <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-medium">
-              {notifications.length > 0 ? Math.round((roadStats.approved / notifications.length) * 100) : 0}% of total
+              {notifications.length > 0 ? Math.round((roadStats.approved / notifications.length) * 100) : 0}% tổng số
             </span>
           </div>
         </div>
@@ -1650,8 +1650,8 @@ return (
       <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-amber-500">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold mb-2 text-gray-800">Pending Review</h2>
-            <p className="text-sm text-gray-500">Awaiting assessment</p>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Chờ đánh giá</h2>
+            <p className="text-sm text-gray-500">Đang chờ xử lý</p>
           </div>
           <div className="bg-amber-100 p-3 rounded-full">
             <Clock className="h-6 w-6 text-amber-600" />
@@ -1665,7 +1665,7 @@ return (
           )}
           <div className="mt-2 text-sm">
             <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-medium">
-              {notifications.length > 0 ? Math.round((roadStats.pending / notifications.length) * 100) : 0}% of total
+              {notifications.length > 0 ? Math.round((roadStats.pending / notifications.length) * 100) : 0}% tổng số
             </span>
           </div>
         </div>
@@ -1674,8 +1674,8 @@ return (
       <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-blue-500">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold mb-2 text-gray-800">Completed Repairs</h2>
-            <p className="text-sm text-gray-500">Fixed road issues</p>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Đã xử lý xong</h2>
+            <p className="text-sm text-gray-500">Sự cố đã khắc phục</p>
           </div>
           <div className="bg-blue-100 p-3 rounded-full">
             <CheckCircle className="h-6 w-6 text-blue-600" />
@@ -1689,7 +1689,7 @@ return (
           )}
           <div className="mt-2 text-sm">
             <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
-              {roadStats.approved > 0 ? Math.round((roadStats.completed / roadStats.approved) * 100) : 0}% completion rate
+              {roadStats.approved > 0 ? Math.round((roadStats.completed / roadStats.approved) * 100) : 0}% hoàn thành
             </span>
           </div>
         </div>
@@ -1698,8 +1698,8 @@ return (
       <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-l-4 border-rose-500">
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-xl font-bold mb-2 text-gray-800">Rejected Reports</h2>
-            <p className="text-sm text-gray-500">Not requiring action</p>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Báo cáo bị từ chối</h2>
+            <p className="text-sm text-gray-500">Không cần xử lý</p>
           </div>
           <div className="bg-rose-100 p-3 rounded-full">
             <AlertCircle className="h-6 w-6 text-rose-600" />
@@ -1713,7 +1713,7 @@ return (
           )}
           <div className="mt-2 text-sm">
             <span className="bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-medium">
-              {(roadStats.approved + roadStats.rejected) > 0 ? Math.round((roadStats.rejected / (roadStats.approved + roadStats.rejected)) * 100) : 0}% rejection rate
+              {(roadStats.approved + roadStats.rejected) > 0 ? Math.round((roadStats.rejected / (roadStats.approved + roadStats.rejected)) * 100) : 0}% từ chối
             </span>
           </div>
         </div>
@@ -1724,7 +1724,7 @@ return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Live Camera */}
       <div className="bg-white rounded-2xl p-5 shadow-md">
-  <h2 className="text-xl font-bold mb-4">Live User Location</h2>
+  <h2 className="text-xl font-bold mb-4">Vị trí người dùng hiện tại</h2>
   <UserLocationMap />
 </div>
            
@@ -1736,11 +1736,11 @@ return (
             <div className="bg-indigo-100 p-2 rounded-lg">
               <PieChartIcon className="h-5 w-5 text-indigo-600" />
             </div>
-            Road Status Analytics
+            Phân tích trạng thái mặt đường
             <button 
               onClick={fetchRoadStats}
               className="bg-indigo-50 p-1 rounded-full hover:bg-indigo-100 transition-colors"
-              title="Refresh data"
+              title="Làm mới dữ liệu"
               disabled={statsLoading}
             >
               <RefreshCw className={`h-4 w-4 text-indigo-600 ${statsLoading ? 'animate-spin' : ''}`} />
@@ -1748,21 +1748,21 @@ return (
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <div className="bg-indigo-50 text-indigo-700 text-xs px-3 py-1.5 rounded-full font-medium">
-              Based on {notifications.length} notifications
+              Dựa trên {notifications.length} thông báo
             </div>
             <div className="bg-emerald-50 text-emerald-700 text-xs px-3 py-1.5 rounded-full font-medium flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              Last updated: {new Date().toLocaleTimeString()}
+              Cập nhật lúc: {new Date().toLocaleTimeString()}
             </div>
           </div>
         </div>
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <PieChartIcon className="h-5 w-5 text-indigo-600" />
-            <h3 className="text-lg font-medium text-gray-800">Road Reports Distribution</h3>
+            <h3 className="text-lg font-medium text-gray-800">Phân bố báo cáo mặt đường</h3>
           </div>
           <p className="text-sm text-gray-500">
-            Proportional breakdown of road reports by status category.
+            Tỷ lệ phân bổ báo cáo theo từng nhóm trạng thái xử lý.
           </p>
         </div>
         
@@ -1779,10 +1779,10 @@ return (
             <PieChart>
               <Pie
                 data={[
-                  { name: 'Approved', value: roadStats.approved, color: '#10b981' },
-                  { name: 'Pending', value: roadStats.pending, color: '#f59e0b' },
-                  { name: 'Completed', value: roadStats.completed, color: '#3b82f6' },
-                  { name: 'Rejected', value: roadStats.rejected, color: '#f43f5e' },
+                  { name: 'Đã duyệt', value: roadStats.approved, color: '#10b981' },
+                  { name: 'Chờ duyệt', value: roadStats.pending, color: '#f59e0b' },
+                  { name: 'Đã xử lý', value: roadStats.completed, color: '#3b82f6' },
+                  { name: 'Từ chối', value: roadStats.rejected, color: '#f43f5e' },
                 ]}
                 cx="50%"
                 cy="50%"
@@ -1799,10 +1799,10 @@ return (
                 animationEasing="ease-out"
               >
                 {[
-                  { name: 'Approved', value: roadStats.approved, color: '#10b981' },
-                  { name: 'Pending', value: roadStats.pending, color: '#f59e0b' },
-                  { name: 'Completed', value: roadStats.completed, color: '#3b82f6' },
-                  { name: 'Rejected', value: roadStats.rejected, color: '#f43f5e' },
+                  { name: 'Đã duyệt', value: roadStats.approved, color: '#10b981' },
+                  { name: 'Chờ duyệt', value: roadStats.pending, color: '#f59e0b' },
+                  { name: 'Đã xử lý', value: roadStats.completed, color: '#3b82f6' },
+                  { name: 'Từ chối', value: roadStats.rejected, color: '#f43f5e' },
                 ].map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
@@ -1813,7 +1813,7 @@ return (
                 ))}
               </Pie>
               <Tooltip 
-                formatter={(value, name) => [`${value} reports`, name]} 
+                formatter={(value, name) => [`${value} báo cáo`, name]} 
                 contentStyle={{ 
                   backgroundColor: 'rgba(255, 255, 255, 0.95)',
                   borderRadius: '8px',
@@ -1842,31 +1842,31 @@ return (
         <div className="mt-6 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-3">
             <FileText className="h-5 w-5 text-indigo-600" />
-            <h3 className="text-lg font-medium text-gray-800">Report Summary</h3>
+            <h3 className="text-lg font-medium text-gray-800">Tóm tắt báo cáo</h3>
           </div>
           <div className="flex flex-wrap gap-4 justify-center">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
               <span className="text-sm text-gray-700">
-                <span className="font-medium">{roadStats.approved}</span> Approved
+                <span className="font-medium">{roadStats.approved}</span> đã duyệt
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-amber-500"></div>
               <span className="text-sm text-gray-700">
-                <span className="font-medium">{roadStats.pending}</span> Pending
+                <span className="font-medium">{roadStats.pending}</span> chờ duyệt
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-blue-500"></div>
               <span className="text-sm text-gray-700">
-                <span className="font-medium">{roadStats.completed}</span> Completed
+                <span className="font-medium">{roadStats.completed}</span> đã xử lý
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-rose-500"></div>
               <span className="text-sm text-gray-700">
-                <span className="font-medium">{roadStats.rejected}</span> Rejected
+                <span className="font-medium">{roadStats.rejected}</span> từ chối
               </span>
             </div>
             <div className="flex items-center gap-2 ml-4 pl-4 border-l border-gray-200">
@@ -1887,8 +1887,8 @@ return (
 
 {activeTab === "History" && (
   <div className="flex-1 p-6 bg-white animate-fadeIn overflow-y-auto">
-    <h2 className="text-3xl font-bold mb-6">Upload History</h2>
-    <p className="text-gray-700 mb-6">Here you can see all your uploaded images with their details.</p>
+    <h2 className="text-3xl font-bold mb-6">Lịch sử tải lên</h2>
+    <p className="text-gray-700 mb-6">Tại đây bạn có thể xem lại tất cả ảnh đã tải lên cùng thông tin chi tiết.</p>
     
     <div className="mt-4">
       {loading ? (
@@ -1909,17 +1909,17 @@ return (
                   <div className="p-4">
                     <div className="flex items-center mb-2">
                       <MapPin className="h-4 w-4 text-red-500 mr-1" />
-                      <h3 className="font-semibold text-gray-800 truncate">Location</h3>
+                      <h3 className="font-semibold text-gray-800 truncate">Vị trí</h3>
                     </div>
                     <p className="text-sm text-gray-600 mb-2 truncate">{item.address}</p>
                     
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <p className="text-xs text-gray-500">Latitude</p>
+                        <p className="text-xs text-gray-500">Vĩ độ</p>
                         <p className="text-sm font-medium">{item.latitude}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Longitude</p>
+                        <p className="text-xs text-gray-500">Kinh độ</p>
                         <p className="text-sm font-medium">{item.longitude}</p>
                       </div>
                     </div>
@@ -1937,7 +1937,11 @@ return (
                           item.reviewStatus === 'rejected' ? 'bg-red-100 text-red-800' : 
                           item.reviewStatus === 'in-progress' ? 'bg-green-100 text-green-800' : 
                           'bg-gray-100 text-gray-800'}`}>
-                        {item.reviewStatus.charAt(0).toUpperCase() + item.reviewStatus.slice(1)}
+                        {{
+                          approved: "Đã duyệt",
+                          rejected: "Từ chối",
+                          "in-progress": "Đang xử lý",
+                        }[item.reviewStatus] || item.reviewStatus}
                       </div>
                     )}
                   </div>
@@ -1947,8 +1951,8 @@ return (
               <div className="col-span-full text-center py-10">
                 <div className="bg-gray-50 rounded-lg p-8 inline-block">
                   <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">No uploads yet</h3>
-                  <p className="text-gray-500">Your uploaded images will appear here</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-1">Chưa có ảnh tải lên</h3>
+                  <p className="text-gray-500">Ảnh bạn tải lên sẽ hiển thị tại đây</p>
                 </div>
               </div>
             )}
@@ -1963,17 +1967,17 @@ return (
       {/* SAVED */}
       {activeTab === "Saved" && (
         <div className="bg-white p-6 rounded-xl shadow-lg animate-fadeIn overflow-y-auto w-full">
-          <h2 className="text-2xl font-bold mb-6">Saved Images</h2>
+          <h2 className="text-2xl font-bold mb-6">Ảnh đã lưu</h2>
           {savedImages.length === 0 ? (
-            <p>No saved road images yet.</p>
+            <p>Chưa có ảnh mặt đường nào được lưu.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedImages.map((item, index) => (
                 <div key={index} className="border rounded-lg p-4 shadow-sm bg-gray-50">
                   <img src={`http://localhost:5000/uploads/${item.image}`} alt={`Saved ${index}`} className="w-full h-48 object-cover rounded-lg mb-3" />
-                  <p><strong>Prediction:</strong> {item.prediction}</p>
-                  <p><strong>Location:</strong> {item.address}</p>
-                  <p><strong>Time:</strong> {new Date(item.timestamp).toLocaleString()}</p>
+                  <p><strong>Dự đoán:</strong> {item.prediction}</p>
+                  <p><strong>Vị trí:</strong> {item.address}</p>
+                  <p><strong>Thời gian:</strong> {new Date(item.timestamp).toLocaleString()}</p>
                 </div>
               ))}
             </div>

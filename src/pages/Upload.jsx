@@ -36,7 +36,7 @@ const Upload = () => {
   const { imagePath, latitude, longitude, address: initialAddress } = location.state || {};
 
   // State variables for component
-  const [address, setAddress] = useState(initialAddress || 'Fetching...'); // Location address
+  const [address, setAddress] = useState(initialAddress || "Đang lấy địa chỉ..."); // Location address
   const [lat, setLat] = useState(latitude || null);                 // Latitude coordinate
   const [lng, setLng] = useState(longitude || null);                // Longitude coordinate
   const [previewUrl, setPreviewUrl] = useState(null);               // URL for image preview
@@ -62,7 +62,7 @@ const Upload = () => {
     if (lat && lng) {
       // If we have coordinates, always try to get the address
       // unless we already have an initialAddress from the router state
-      if (!initialAddress || address === 'Fetching...') {
+      if (!initialAddress || address === "Đang lấy địa chỉ...") {
         fetchAddress(lat, lng);                                     // Get address from coordinates
       }
     }
@@ -143,12 +143,12 @@ const Upload = () => {
         setAddress(data.display_name);
       } else {
         // If the API doesn't return a valid address, use coordinates
-        setAddress(`Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+        setAddress(`Vị trí: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
       }
     } catch (error) {
       console.error('Address lookup error:', error);
       // In case of any error, display coordinates
-      setAddress(`Location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+      setAddress(`Vị trí: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
     }
   };
 
@@ -204,14 +204,14 @@ const Upload = () => {
       formData.append('longitude', lng?.toString() || '');          // Add longitude if available
       
       // Update notification to show analysis has started
-      setNotification("Processing image... Analyzing road damage patterns.");
+      setNotification("Đang xử lý ảnh... Hệ thống đang phân tích dấu hiệu hư hỏng.");
       
       // STEP 3: Set up a progress indicator to show activity during long processing
       let progressCounter = 0;                                      // Initialize progress counter
       progressInterval = setInterval(() => {
         progressCounter += 5;                                       // Increment by 5% every interval
         if (progressCounter <= 100) {                               // Cap at 100%
-          setNotification(`Processing image... ${progressCounter}% complete. Please wait.`);
+          setNotification(`Đang xử lý ảnh... Hoàn thành ${progressCounter}%. Vui lòng chờ.`);
         }
       }, 3000);                                                     // Update every 3 seconds
       
@@ -381,7 +381,7 @@ const Upload = () => {
       // Show warning for very large requests that might timeout
       if (requestSize > 40) {
         console.warn("Warning: Request size is very large and may cause issues");
-        setNotification("Warning: Image is very large. Processing may take longer.");
+        setNotification("Lưu ý: Ảnh có kích thước lớn nên thời gian xử lý có thể lâu hơn.");
       }
       
       // STEP 6: Send data to server for storage
@@ -665,12 +665,12 @@ const Upload = () => {
                     <div className="bg-green-100 p-2 rounded-lg">
                       <Camera size={18} className="text-green-600" />
                     </div>
-                    Road Image Analysis
+                    Phân tích ảnh mặt đường
                   </h2>
                   {analysisResult && (
                     <div className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getSeverityBadge(analysisResult.severity?.level).bg} ${getSeverityBadge(analysisResult.severity?.level).text} shadow-sm`}>
                       {getSeverityBadge(analysisResult.severity?.level).icon}
-                      {analysisResult.severity?.level || 'Unknown'} Severity
+                      {analysisResult.severity?.level || "Không xác định"} mức độ
                     </div>
                   )}
                 </div>
@@ -693,13 +693,13 @@ const Upload = () => {
                       <>
                         <BeatLoader color="#fff" size={8} />
                         <span>
-                          {saving ? 'Saving Results...' : 'Processing Image...'}
+                          {saving ? "Đang lưu kết quả..." : "Đang xử lý ảnh..."}
                         </span>
                       </>
                     ) : (
                       <>
                         <Zap size={20} />
-                        {analysisResult ? 'Analyze Again' : 'Analyze Damage'}
+                        {analysisResult ? "Phân tích lại" : "Phân tích hư hỏng"}
                       </>
                     )}
                   </button>
@@ -749,8 +749,8 @@ const Upload = () => {
                       <Popup>
                         <div className="text-sm p-1">
                           <p className="font-medium text-gray-800">
-                            {address === 'Fetching...' 
-                              ? 'Đang lấy địa chỉ...' 
+                            {address === "Đang lấy địa chỉ..."
+                              ? "Đang lấy địa chỉ..."
                               : address || `Vị trí: ${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}
                           </p>
                           <p className="text-gray-600 mt-1 flex items-center gap-1">
@@ -761,7 +761,7 @@ const Upload = () => {
                                   ? 'bg-orange-500'
                                   : 'bg-green-500'
                             }`}></span>
-                            Severity: {analysisResult?.severity?.level || 'Unknown'}
+                            Mức độ: {analysisResult?.severity?.level || "Không xác định"}
                           </p>
                         </div>
                       </Popup>
@@ -796,9 +796,9 @@ const Upload = () => {
                           <div>
                             <p className="text-sm font-medium text-gray-800">Địa chỉ</p>
                             <p className="text-sm text-gray-600">
-                              {address === 'Fetching...' 
-                                ? 'Fetching address...' 
-                                : address || `Location: ${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}
+                              {address === "Đang lấy địa chỉ..."
+                                ? "Đang lấy địa chỉ..."
+                                : address || `Vị trí: ${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}
                             </p>
                           </div>
                         </div>
@@ -846,7 +846,7 @@ const Upload = () => {
                           <span className="text-sm font-medium text-gray-700">Mức độ nghiêm trọng:</span>
                           <span className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getSeverityBadge(analysisResult.severity?.level).bg} ${getSeverityBadge(analysisResult.severity?.level).text} shadow-sm`}>
                             {getSeverityBadge(analysisResult.severity?.level).icon}
-                            {analysisResult.severity?.level || 'Unknown'}
+                            {analysisResult.severity?.level || "Không xác định"}
                           </span>
                         </div>
                         
@@ -936,9 +936,9 @@ const Upload = () => {
                 <div className="bg-green-100 p-4 rounded-full inline-flex mb-5 shadow-inner">
                   <Info size={28} className="text-green-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">Ready for Analysis</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Sẵn sàng để phân tích</h3>
                 <p className="text-gray-500 mb-6">
-                  Click the "Analyze Damage" button to process the image and get detailed damage assessment.
+                  Nhấn nút "Phân tích hư hỏng" để xử lý ảnh và nhận kết quả đánh giá chi tiết.
                 </p>
                 <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div className="h-full bg-gradient-to-r from-green-200 to-green-300 animate-pulse" style={{ width: '30%' }}></div>

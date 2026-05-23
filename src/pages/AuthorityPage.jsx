@@ -529,7 +529,7 @@ const AuthorityPage = () => {
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-800">{dashboardStats.totalInspections.count}</span>
               <span className="ml-2 text-xs text-green-600">
-                +{dashboardStats.totalInspections.newThisWeek} this week
+                +{dashboardStats.totalInspections.newThisWeek} trong tuần này
               </span>
             </div>
           </div>
@@ -550,7 +550,7 @@ const AuthorityPage = () => {
                 {dashboardStats.highSeverityIssues.count}
               </span>
               <span className="ml-2 text-xs text-gray-500">
-                {dashboardStats.highSeverityIssues.percentage}% of total
+                {dashboardStats.highSeverityIssues.percentage}% tổng số
               </span>
             </div>
           </div>
@@ -786,7 +786,7 @@ const AuthorityPage = () => {
                             <span>Người tải lên</span>
                           </div>
                         </th>
-                        <th className="px-6 py-3 text-center font-medium">Actions</th>
+                        <th className="px-6 py-3 text-center font-medium">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody>

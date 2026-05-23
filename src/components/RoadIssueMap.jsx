@@ -61,7 +61,7 @@ const MapSearch = ({ onSearch }) => {
       <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
-          placeholder="Search by location..."
+          placeholder="Tìm theo vị trí..."
           className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -377,7 +377,7 @@ const RoadIssueMap = () => {
   
   // Format damage type for display
   const formatDamageType = (type) => {
-    if (!type) return 'Unknown';
+    if (!type) return "Không xác định";
     return type.replace(/_/g, ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
@@ -532,38 +532,38 @@ const RoadIssueMap = () => {
                   <h3 className="font-semibold text-gray-900 text-base mb-1">
                     {Array.isArray(entry.damageType) 
                       ? entry.damageType.map(type => formatDamageType(type)).join(', ')
-                      : formatDamageType(entry.damageType) || 'Unknown Issue'
+                      : formatDamageType(entry.damageType) || "Sự cố chưa xác định"
                     }
                   </h3>
                   
                   <p className="text-sm text-gray-600 mb-2 flex items-center">
                     <MapPin size={14} className="mr-1 text-gray-400" />
-                    {entry.address || 'Location not available'}
+                    {entry.address || "Chưa có vị trí"}
                   </p>
                   
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <div className="bg-gray-50 p-2 rounded">
-                      <div className="text-xs text-gray-500">Severity</div>
+                      <div className="text-xs text-gray-500">Mức độ</div>
                       <div className="flex items-center">
                         <span 
                           className="inline-block w-3 h-3 rounded-full mr-1"
                           style={{ backgroundColor: color }}
                         ></span>
-                        <span className="text-sm font-medium capitalize">{entry.severity || 'unknown'}</span>
+                        <span className="text-sm font-medium capitalize">{entry.severity || "không xác định"}</span>
                       </div>
                     </div>
                     
                     <div className="bg-gray-50 p-2 rounded">
-                      <div className="text-xs text-gray-500">Status</div>
+                      <div className="text-xs text-gray-500">Trạng thái</div>
                       <div className="text-sm font-medium">
-                        {entry.status || 'Not Set'}
+                        {entry.status || "Chưa đặt"}
                       </div>
                     </div>
                   </div>
                   
                   {entry.timestamp && (
                     <div className="text-xs text-gray-500 mb-3">
-                      Reported: {new Date(entry.timestamp).toLocaleDateString()}
+                      Báo cáo: {new Date(entry.timestamp).toLocaleDateString()}
                     </div>
                   )}
                   
@@ -571,7 +571,7 @@ const RoadIssueMap = () => {
                     onClick={() => handleMarkerClick(entry._id)}
                     className="w-full py-1.5 px-3 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded transition-colors flex items-center justify-center"
                   >
-                    View Details
+                    Xem chi tiết
                   </button>
                 </div>
               </Popup>
@@ -590,7 +590,7 @@ const RoadIssueMap = () => {
           className="flex items-center bg-white px-3 py-2 rounded-lg shadow-md hover:bg-gray-50 transition-colors border border-gray-200"
         >
           <Filter size={16} className="mr-2 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filters</span>
+          <span className="text-sm font-medium text-gray-700">Bộ lọc</span>
           {isFilterOpen ? (
             <ChevronUp size={16} className="ml-2 text-gray-500" />
           ) : (
@@ -612,7 +612,7 @@ const RoadIssueMap = () => {
             <div className="p-4 border-b border-gray-200 flex justify-between items-center">
               <div className="flex items-center">
                 <Sliders size={16} className="mr-2 text-gray-500" />
-                <h3 className="font-medium text-gray-800">Advanced Filters</h3>
+                <h3 className="font-medium text-gray-800">Bộ lọc nâng cao</h3>
               </div>
               <button 
                 onClick={() => setIsFilterOpen(false)}
@@ -625,7 +625,7 @@ const RoadIssueMap = () => {
             <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
               {/* Severity Filter */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Severity</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Mức độ</h4>
                 <div className="space-y-2">
                   {['low', 'moderate', 'high', 'severe'].map(severity => (
                     <label key={severity} className="flex items-center">
@@ -669,7 +669,7 @@ const RoadIssueMap = () => {
               
               {/* Status Filter */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Status</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Trạng thái</h4>
                 <div className="space-y-2">
                   {Object.keys(statusCounts).map(status => (
                     <label key={status} className="flex items-center">
@@ -734,14 +734,14 @@ const RoadIssueMap = () => {
       
       {/* Legend */}
       <div className="absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-md z-[1000] border border-gray-200">
-        <h4 className="text-xs font-medium mb-2 text-gray-700">Severity Legend</h4>
+        <h4 className="text-xs font-medium mb-2 text-gray-700">Chú giải mức độ</h4>
         <div className="space-y-1.5">
           {[
-            { level: 'Low', color: '#3498db', count: severityCounts.low },
-            { level: 'Moderate', color: '#f39c12', count: severityCounts.moderate },
-            { level: 'High', color: '#e67e22', count: severityCounts.high },
-            { level: 'Severe', color: '#e74c3c', count: severityCounts.severe },
-            { level: 'Unknown', color: '#95a5a6', count: severityCounts.unknown }
+            { level: 'Thấp', color: '#3498db', count: severityCounts.low },
+            { level: 'Trung bình', color: '#f39c12', count: severityCounts.moderate },
+            { level: 'Cao', color: '#e67e22', count: severityCounts.high },
+            { level: 'Nghiêm trọng', color: '#e74c3c', count: severityCounts.severe },
+            { level: 'Không xác định', color: '#95a5a6', count: severityCounts.unknown }
           ].map(item => (
             <div key={item.level} className="flex items-center justify-between">
               <div className="flex items-center">

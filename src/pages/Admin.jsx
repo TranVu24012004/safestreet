@@ -344,6 +344,11 @@ const Admin = () => {
   // ThÃªm cÃ¡c state quáº£n lÃ½ ngÆ°á»i dÃ¹ng
   const [usersList, setUsersList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userNotice, setUserNotice] = useState({ type: "", message: "" });
+
+  const showUserNotice = (message, type = "success") => {
+    setUserNotice({ type, message });
+  };
 
   const fetchUsersList = useCallback(async () => {
     setLoadingUsers(true);
@@ -357,10 +362,12 @@ const Admin = () => {
         }
       } else {
         setUsersList([]);
+        showUserNotice("Không thể tải danh sách tài khoản.", "error");
       }
     } catch (error) {
       console.error("Lỗi:", error);
       setUsersList([]);
+      showUserNotice("Không thể tải danh sách tài khoản.", "error");
     } finally { setLoadingUsers(false); }
   }, [userId]);
 
@@ -369,18 +376,47 @@ const Admin = () => {
     if (activeTab === "Users") fetchUsersList();
   }, [activeTab, fetchUsersList]);
   const handleRoleChange = async (id, role) => {
-    await fetch(`${BACKEND_URL}/api/users/${id}/role`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role })
-    });
-    fetchUsersList(); // Táº£i láº¡i báº£ng
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users/${id}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role })
+      });
+
+      if (!response.ok) {
+        throw new Error("Không thể cập nhật vai trò người dùng.");
+      }
+
+      setUsersList((current) =>
+        current.map((user) => (user._id === id ? { ...user, role } : user))
+      );
+      showUserNotice("Đã cập nhật vai trò tài khoản thành công.");
+    } catch (changeError) {
+      console.error("Lỗi cập nhật vai trò:", changeError);
+      showUserNotice(
+        changeError.message || "Không thể cập nhật vai trò người dùng.",
+        "error"
+      );
+      fetchUsersList();
+    }
   };
 
   const handleDeleteUser = async (id) => {
-    if(!window.confirm('Xác nhận xóa tài khoản này?')) return;
-    const res = await fetch(`${BACKEND_URL}/api/users/${id}`, { method: 'DELETE' });
-    if (res.ok) setUsersList(usersList.filter(u => u._id !== id));
+    if (!window.confirm("Bạn có chắc muốn xóa tài khoản này không?")) return;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users/${id}`, { method: 'DELETE' });
+      if (!response.ok) {
+        throw new Error("Không thể xóa tài khoản.");
+      }
+
+      setUsersList((current) => current.filter((user) => user._id !== id));
+      setUserCount((current) => Math.max(0, current - 1));
+      showUserNotice("Đã xóa tài khoản thành công.");
+    } catch (deleteError) {
+      console.error("Lỗi xóa tài khoản:", deleteError);
+      showUserNotice(deleteError.message || "Không thể xóa tài khoản.", "error");
+    }
   };
 
   // Tab change is now handled by the Sidebar component
@@ -930,20 +966,45 @@ const Admin = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <Users className="h-6 w-6 text-indigo-600" />
-                User Management
+                Quản lý người dùng
               </h2>
             </div>
+
+            {userNotice.message && (
+              <div
+                className={`mb-4 flex items-start justify-between gap-3 rounded-lg border px-4 py-3 text-sm ${
+                  userNotice.type === "error"
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-green-200 bg-green-50 text-green-700"
+                }`}
+              >
+                <div className="flex items-start gap-2">
+                  {userNotice.type === "error" ? (
+                    <AlertTriangle className="h-4 w-4 mt-0.5" />
+                  ) : (
+                    <CheckCircle className="h-4 w-4 mt-0.5" />
+                  )}
+                  <span>{userNotice.message}</span>
+                </div>
+                <button
+                  onClick={() => setUserNotice({ type: "", message: "" })}
+                  className="text-current opacity-70 hover:opacity-100"
+                >
+                  Đóng
+                </button>
+              </div>
+            )}
             
             {loadingUsers ? (
-              <p>Loading data...</p>
+              <p>Đang tải dữ liệu...</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email / Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email / Tên</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Vai trò</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -956,9 +1017,9 @@ const Admin = () => {
                             onChange={(e) => handleRoleChange(user._id, e.target.value)}
                             className="border border-gray-300 rounded p-1"
                           >
-                            <option value="citizen">Citizen</option>
-                            <option value="admin">Administrator</option>
-                            <option value="authority">Authority</option>
+                            <option value="citizen">Người dân</option>
+                            <option value="admin">Quản trị viên</option>
+                            <option value="authority">Cơ quan chức năng</option>
                           </select>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm">
@@ -984,10 +1045,10 @@ const Admin = () => {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-green-600" />
-                Live Map - Your Current Location
+                Bản đồ trực tiếp - Vị trí hiện tại của bạn
               </h2>
               <div className="bg-green-50 text-green-700 text-xs font-medium px-2.5 py-1 rounded">
-                Real-time
+                Thời gian thực
               </div>
             </div>
             <UserLocationMap />

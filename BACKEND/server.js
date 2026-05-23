@@ -1048,12 +1048,29 @@ app.patch("/api/feedbacks/:id", async (req, res) => {
   }
 });
 
+app.delete("/api/feedbacks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedFeedback = await Feedback.findByIdAndDelete(id);
+
+    if (!deletedFeedback) {
+      return res.status(404).json({ error: "Feedback not found" });
+    }
+
+    res.status(200).json({ message: "Feedback deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    res.status(500).json({ error: "Error deleting feedback" });
+  }
+});
+
 // --- /api/feedbacks/:id/reply ---
 const EMAIL_USER = process.env.EMAIL_USER || process.env.EMAIL_FROM || "";
 const EMAIL_PASS = process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD || "";
 const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USER;
+const EMAIL_CONFIGURED = Boolean(EMAIL_USER && EMAIL_PASS);
 
-if (!EMAIL_USER || !EMAIL_PASS) {
+if (!EMAIL_CONFIGURED) {
   console.warn(
     "Email configuration is incomplete. Set EMAIL_USER and EMAIL_PASS (or EMAIL_PASSWORD) in .env."
   );
@@ -1154,13 +1171,27 @@ app.post("/api/feedbacks/:id/reply", async (req, res) => {
       `
     };
     
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    let emailSent = false;
+    let emailError = "";
+
+    if (EMAIL_CONFIGURED && recipientEmail) {
+      try {
+        await transporter.sendMail(mailOptions);
+        emailSent = true;
+      } catch (mailError) {
+        emailError = mailError.message;
+        console.error("Reply email could not be sent:", mailError);
+      }
+    } else {
+      emailError = "Email service is not configured.";
+      console.warn("Skipping reply email because email configuration is incomplete.");
+    }
     
     // Update feedback to include the reply
     feedback.replied = true;
     feedback.replyText = replyText;
     feedback.replyDate = new Date();
+    feedback.completed = true;
     await feedback.save();
     
     console.log(`Reply sent to ${recipientName} (${recipientEmail}) from ${senderEmail || EMAIL_FROM || 'Inspectify'}`);
@@ -1186,7 +1217,12 @@ app.post("/api/feedbacks/:id/reply", async (req, res) => {
       }
     }
     
-    res.status(200).json({ message: "Reply sent successfully" });
+    res.status(200).json({
+      message: emailSent ? "Reply sent successfully" : "Reply saved successfully",
+      emailSent,
+      emailError: emailError || undefined,
+      feedback
+    });
   } catch (error) {
     console.error("Error sending reply:", error);
     res.status(500).json({ error: `Error sending reply: ${error.message}` });
@@ -2302,8 +2338,8 @@ app.post("/api/review-image-v2", async (req, res) => {
       
       console.log("Update result:", result);
       
-      if (result.modifiedCount === 0) {
-        return res.status(500).json({ error: "Failed to update the entry" });
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ error: "Image entry not found" });
       }
     } catch (saveError) {
       console.error("Error updating image entry:", saveError);

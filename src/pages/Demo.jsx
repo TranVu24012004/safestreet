@@ -179,50 +179,50 @@ const Demo = () => {
 
   const slideContent = [
     {
-      step: "Step 1",
-      text: "Click the 'Get Started' button on the homepage to create your account and begin using the platform.",
+      step: "Bước 1",
+      text: "Tại trang chủ, nhấn nút 'Đăng ký' để tạo tài khoản và bắt đầu sử dụng nền tảng.",
       img1: "1-1.jpg",
       img2: "gtst.jpg"
     },
     {
-      step: "Step 2",
-      text: "Click 'Login' on the homepage and enter your credentials to access your account.",
+      step: "Bước 2",
+      text: "Nhấn 'Đăng nhập' trên trang chủ và nhập thông tin tài khoản để truy cập hệ thống.",
       img1: "lgna.png",
       img2: "lgn.jpg"
     },
     {
-      step: "Step 3",
-      text: "After you log in, you go to the 'Dashboard' and click the 'Camera' icon to upload an image of the road damage.",
+      step: "Bước 3",
+      text: "Sau khi đăng nhập, vào 'Bảng điều khiển' và chọn mục 'Máy ảnh' để tải lên ảnh hư hỏng mặt đường.",
       img1: "dshbrda.png",
       img2: "cmrad.png"
     },
     {
-      step: "Step 4",
-      text: "Click on a 'Analyze Road Condition' to determine whether the uploaded image contains a road or not.",
+      step: "Bước 4",
+      text: "Nhấn 'Phân tích tình trạng mặt đường' để hệ thống xác định ảnh tải lên có chứa mặt đường hay không.",
       img1: "anlz.png",
       img2: "report.png"
     },
     {
-      step: "Step 5",
-      text: "Click 'History' to view the previously reported road issues and track their progress over time.",
+      step: "Bước 5",
+      text: "Mở mục 'Lịch sử' để xem các sự cố đã báo cáo trước đó và theo dõi tiến độ xử lý.",
       img1: "hstry.jpg",
       img2: "status2.png"
     },
     {
-      step: "Step 6",
-      text: "Get notified once your issue is resolved by authorities.",
+      step: "Bước 6",
+      text: "Bạn sẽ nhận thông báo khi sự cố được cơ quan chức năng tiếp nhận hoặc xử lý xong.",
       img1: "dshbrdn.png",
       img2: "ntfcn1.jpg"
     },
     {
-      step: "Step 7",
-      text: "Get the progress of your report through notifications, which updates in real-time.",
+      step: "Bước 7",
+      text: "Theo dõi tiến độ báo cáo theo thời gian thực thông qua hệ thống thông báo cập nhật liên tục.",
       img1: "stsbr.jpg",
       img2: "" // Leave empty since this is a single image
     },
     {
-      step: "Step 8",
-      text: "Need help or want to share feedback? Click on Contact Us to reach our support team for assistance or queries.",
+      step: "Bước 8",
+      text: "Nếu cần hỗ trợ hoặc muốn gửi góp ý, hãy vào trang 'Liên hệ' để kết nối với đội ngũ hỗ trợ.",
       img1: "cnt.jpg",
       img2: "" // Leave empty since this is a single image
     }
@@ -261,11 +261,11 @@ const Demo = () => {
             </div>
           </div>
           
-          <h2 className="text-3xl font-bold text-white mt-10 mb-2 tracking-tight">Loading Demo</h2>
+          <h2 className="text-3xl font-bold text-white mt-10 mb-2 tracking-tight">Đang tải demo</h2>
           <div className="h-1 w-48 bg-green-900 rounded-full overflow-hidden mt-1 mb-4">
             <div className="h-full bg-gradient-to-r from-green-400 via-emerald-500 to-teal-400 animate-shimmer"></div>
           </div>
-          <p className="text-green-200 text-center max-w-md font-light">Preparing your interactive road damage detection experience</p>
+          <p className="text-green-200 text-center max-w-md font-light">Đang chuẩn bị trải nghiệm hướng dẫn phát hiện hư hỏng mặt đường</p>
         </div>
       )}
       
@@ -318,11 +318,11 @@ const Demo = () => {
             <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-teal-400/10 rounded-full blur-xl"></div>
             
             <h1 className="text-5xl sm:text-6xl font-black text-center mb-6 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent tracking-tight leading-tight">
-              Chào mừng đến với demo phát hiện hư hỏng đường
+              Chào mừng đến với demo phát hiện hư hỏng mặt đường
             </h1>
             
             <p className="text-center text-gray-600 max-w-3xl mx-auto text-lg font-light leading-relaxed">
-              Khám phá hướng dẫn tương tác để tìm hiểu cách nền tảng của chúng tôi giúp xác định và báo cáo hư hỏng đường hiệu quả.
+              Khám phá hướng dẫn tương tác để hiểu cách nền tảng của chúng tôi hỗ trợ phát hiện và báo cáo hư hỏng mặt đường hiệu quả.
             </p>
             
             <div className="flex justify-center mt-8">
@@ -355,7 +355,7 @@ const Demo = () => {
             <button
               onClick={handlePreviousClick}
               className="absolute -left-7 sm:left-0 z-20 flex items-center justify-center w-16 h-16 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 border border-green-100/50 group"
-              aria-label="Previous slide"
+              aria-label="Bước trước"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-teal-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-700 group-hover:text-green-600 transition-colors">
@@ -373,7 +373,7 @@ const Demo = () => {
                   <div className="relative p-1 bg-gradient-to-r from-green-400/50 to-teal-500/50 rounded-2xl backdrop-blur-sm">
                     <img
                       src={slideContent[currentSlide - 1].img1}
-                      alt={`${slideContent[currentSlide - 1].step} demonstration`}
+                      alt={`${slideContent[currentSlide - 1].step} minh họa`}
                       className="w-auto max-w-full h-auto max-h-[400px] object-contain rounded-xl shadow-xl border-2 border-white/80 bg-white/90"
                     />
                   </div>
@@ -387,7 +387,7 @@ const Demo = () => {
                     <div className="relative p-1 bg-gradient-to-r from-green-400/50 to-emerald-500/50 rounded-2xl backdrop-blur-sm">
                       <img
                         src={slideContent[currentSlide - 1].img1}
-                        alt={`${slideContent[currentSlide - 1].step} before`}
+                        alt={`${slideContent[currentSlide - 1].step} bước đầu`}
                         className="w-auto max-w-full h-auto max-h-[350px] object-contain rounded-xl shadow-xl border-2 border-white/80 bg-white/90"
                       />
                     </div>
@@ -411,7 +411,7 @@ const Demo = () => {
                       <div className="relative p-1 bg-gradient-to-r from-emerald-400/50 to-teal-500/50 rounded-2xl backdrop-blur-sm">
                         <img
                           src={slideContent[currentSlide - 1].img2}
-                          alt={`${slideContent[currentSlide - 1].step} after`}
+                          alt={`${slideContent[currentSlide - 1].step} kết quả`}
                           className="w-auto max-w-full h-auto max-h-[350px] object-contain rounded-xl shadow-xl border-2 border-white/80 bg-white/90"
                         />
                       </div>
@@ -427,7 +427,7 @@ const Demo = () => {
             <button
               onClick={handleNextClick}
               className="absolute -right-7 sm:right-0 z-20 flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-teal-600 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 group"
-              aria-label="Next slide"
+              aria-label="Bước tiếp theo"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-teal-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
@@ -448,7 +448,7 @@ const Demo = () => {
               key={dotIndex}
               onClick={() => handleDotClick(dotIndex)}
               className={`group relative flex flex-col items-center`}
-              aria-label={`Go to slide ${dotIndex}`}
+              aria-label={`Đi đến bước ${dotIndex}`}
             >
               <span className={`transition-all duration-500 ${
                 activeDot === dotIndex 

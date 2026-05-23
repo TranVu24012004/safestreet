@@ -12,7 +12,6 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  // Check for saved email in localStorage
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
@@ -23,34 +22,27 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMessage(""); // Clear previous errors
+    setErrorMessage("");
     setLoading(true);
     console.log("Login attempt for:", email);
 
-    // Save email if remember me is checked
     if (rememberMe) {
       localStorage.setItem("rememberedEmail", email);
     } else {
       localStorage.removeItem("rememberedEmail");
     }
-    
-    // SIMPLE ADMIN LOGIN - No verification needed
+
     if (email === "admin123@gmail.com" && password === "admin1234567890") {
       console.log("Admin login detected - going directly to admin dashboard");
-      
-      // Store admin info in localStorage
       localStorage.setItem("user", JSON.stringify({ email }));
       localStorage.setItem("roadVisionUserId", "admin_" + Date.now());
-      localStorage.setItem("roadVisionUserName", "Administrator");
+      localStorage.setItem("roadVisionUserName", "Quản trị viên");
       localStorage.setItem("roadVisionRole", "admin");
-      
-      // Go directly to admin dashboard
       setLoading(false);
       navigate("/admin");
       return;
     }
 
-    // For non-admin users, try server login
     try {
       console.log("Sending login request to server...");
       const response = await fetch("http://localhost:5000/api/login", {
@@ -67,16 +59,13 @@ const LoginPage = () => {
         console.log("Login successful:", data);
         localStorage.removeItem("roadVisionUserType");
         localStorage.removeItem("roadVisionIsAdmin");
-        // Store user information
         localStorage.setItem("user", JSON.stringify({ email }));
         localStorage.setItem("roadVisionUserId", data.userId || "user_" + Date.now());
-        localStorage.setItem("roadVisionUserName", data.name || email.split('@')[0]);
-        // CODE MỚI: Lấy role từ backend trả về, nếu không có mặc định là citizen
+        localStorage.setItem("roadVisionUserName", data.name || email.split("@")[0]);
         localStorage.setItem("roadVisionRole", data.role || "citizen");
-        
+
         setLoading(false);
-        
-        // Điều hướng dựa trên quyền
+
         const userRole = data.role || "citizen";
         if (userRole === "admin" || userRole === "authority") {
           navigate("/admin");
@@ -86,12 +75,12 @@ const LoginPage = () => {
       } else {
         console.error("Login failed:", data.error);
         setLoading(false);
-        setErrorMessage(data.error || "Invalid credentials. Please try again.");
+        setErrorMessage(data.error || "Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Login Error:", error);
       setLoading(false);
-      setErrorMessage("Server error. Try again!");
+      setErrorMessage("Không thể kết nối tới máy chủ. Vui lòng thử lại sau.");
     }
   };
 
@@ -99,15 +88,12 @@ const LoginPage = () => {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="min-h-screen flex items-center justify-center p-6 pt-20">
         <div className="bg-white shadow-2xl rounded-3xl flex w-full max-w-5xl overflow-hidden">
-          
-          {/* Left: Login Form */}
           <div className="w-full md:w-1/2 p-10 md:p-12">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Chào mừng trở lại</h2>
-              <p className="text-gray-600">Đăng nhập để tiếp tục tới bảng điều khiển</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Chào mừng quay trở lại</h2>
+              <p className="text-gray-600">Đăng nhập để tiếp tục theo dõi và báo cáo sự cố mặt đường.</p>
             </div>
 
-            {/* Email & Password Form */}
             <form className="space-y-6" onSubmit={handleLogin}>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -127,7 +113,7 @@ const LoginPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock size={18} className="text-gray-400" />
@@ -140,10 +126,11 @@ const LoginPage = () => {
                     placeholder="Nhập mật khẩu của bạn"
                     required
                   />
-                  <button 
+                  <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   >
                     {showPassword ? (
                       <EyeOff size={18} className="text-gray-400 hover:text-gray-600" />
@@ -217,36 +204,36 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Right: Login Illustration with greenish background */}
           <div className="hidden md:block w-1/2 bg-gradient-to-br from-green-500 to-teal-600 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-20">
               <svg width="100%" height="100%" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                   <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5"/>
+                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
                   </pattern>
                   <pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse">
-                    <rect width="100" height="100" fill="url(#smallGrid)"/>
-                    <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1"/>
+                    <rect width="100" height="100" fill="url(#smallGrid)" />
+                    <path d="M 100 0 L 0 0 0 100" fill="none" stroke="white" strokeWidth="1" />
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
               </svg>
             </div>
-            
+
             <div className="relative z-10 h-full flex flex-col justify-between p-12">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-6">Road Damage Detection & Management</h2>
+                <h2 className="text-3xl font-bold text-white mb-6">Giám sát mặt đường hiện đại và trực quan</h2>
                 <p className="text-white mb-8 leading-relaxed">
-                  Identify, report, and manage road infrastructure issues with our AI-powered platform. Help create safer roads for everyone.
+                  Đăng nhập để quản lý báo cáo, theo dõi tiến độ xử lý và khai thác dữ liệu AI phục
+                  vụ vận hành hạ tầng giao thông.
                 </p>
-                
+
                 <div className="space-y-4">
                   {[
-                    "AI-powered damage detection",
-                    "Real-time reporting system",
-                    "Comprehensive analytics dashboard",
-                    "Maintenance tracking & prioritization"
+                    "Nhận diện hư hỏng bằng AI",
+                    "Theo dõi báo cáo theo thời gian thực",
+                    "Bảng điều khiển tổng hợp dễ sử dụng",
+                    "Ưu tiên bảo trì hiệu quả hơn",
                   ].map((feature, index) => (
                     <div key={index} className="flex items-center">
                       <svg className="h-5 w-5 text-white/70 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -257,7 +244,7 @@ const LoginPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm">
                 <div className="flex items-center space-x-4">
                   <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
@@ -266,8 +253,10 @@ const LoginPage = () => {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-white font-medium">"This platform has transformed how we manage road maintenance in our city."</p>
-                    <p className="text-white text-sm mt-1">- City Infrastructure Manager</p>
+                    <p className="text-white font-medium">
+                      "Nền tảng giúp chúng tôi theo dõi bảo trì mặt đường nhanh và rõ ràng hơn rất nhiều."
+                    </p>
+                    <p className="text-white text-sm mt-1">- Quản lý hạ tầng đô thị</p>
                   </div>
                 </div>
               </div>
