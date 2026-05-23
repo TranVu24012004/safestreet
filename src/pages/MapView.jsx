@@ -45,7 +45,7 @@ const MapView = () => {
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center">
                 <MapPin className="h-6 w-6 text-blue-500 mr-2" />
-                <h1 className="text-xl font-semibold text-gray-900">Road Issues Map</h1>
+                <h1 className="text-xl font-semibold text-gray-900">Bản đồ sự cố đường</h1>
               </div>
             </div>
           </div>
@@ -63,16 +63,15 @@ const MapView = () => {
                   <Info className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900 mb-2">About This Map</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">Giới thiệu về bản đồ</h2>
                   <p className="text-gray-600">
-                    This map displays all reported road issues color-coded by severity. 
-                    Click on any marker to view details about the issue and navigate to its full report.
+                    Bản đồ này hiển thị tất cả sự cố đường đã báo cáo, mã màu theo mức độ nghiêm trọng.
+                    Nhấp vào bất kỳ điểm đánh dấu nào để xem chi tiết về sự cố và chuyển đến báo cáo đầy đủ.
                   </p>
                   <div className="mt-3 bg-blue-50 p-3 rounded-lg">
-                    <h3 className="text-sm font-medium text-blue-800">Map Legend</h3>
+                    <h3 className="text-sm font-medium text-blue-800">Chú giải bản đồ</h3>
                     <p className="text-sm text-blue-700 mt-1">
-                      The markers are color-coded by severity: blue for low, orange for moderate, 
-                      dark orange for high, and red for severe issues. Gray markers indicate unknown severity.
+                      Các điểm được mã màu theo mức độ: xanh cho thấp, cam cho vừa, cam đậm cho cao, và đỏ cho nghiêm trọng. Các điểm màu xám biểu thị mức độ chưa xác định.
                     </p>
                   </div>
                 </div>

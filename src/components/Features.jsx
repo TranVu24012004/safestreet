@@ -4,33 +4,33 @@ import { Camera, BarChart2, FileText, Activity } from "lucide-react";
 
 const featuresData = [
   {
-    title: "Damage Detection",
+    title: "Phát hiện hư hỏng",
     description:
-      "Automatically detect cracks, potholes, and surface degradation with cutting-edge Vision Transformers.",
+      "Tự động phát hiện nứt, ổ gà, và suy thoái bề mặt bằng Vision Transformer tiên tiến.",
     icon: Camera,
     color: "from-green-400 to-emerald-500",
     delay: 0.1
   },
   {
-    title: "Severity Classification",
+    title: "Phân loại mức độ",
     description:
-      "Precisely classify the level of road damage to prioritize maintenance and repair schedules efficiently.",
+      "Phân loại chính xác mức độ hư hỏng đường để ưu tiên lịch bảo trì và sửa chữa hiệu quả.",
     icon: BarChart2,
     color: "from-blue-400 to-indigo-500",
     delay: 0.3
   },
   {
-    title: "Smart Reports",
+    title: "Báo cáo thông minh",
     description:
-      "Receive real-time visual reports with actionable insights and repair recommendations.",
+      "Nhận báo cáo hình ảnh theo thời gian thực cùng thông tin hành động và đề xuất sửa chữa.",
     icon: FileText,
     color: "from-purple-400 to-indigo-500",
     delay: 0.5
   },
   {
-    title: "Performance Analytics",
+    title: "Phân tích hiệu suất",
     description:
-      "Track repair efficiency, monitor infrastructure health, and optimize maintenance resources with data-driven insights.",
+      "Theo dõi hiệu quả sửa chữa, giám sát sức khỏe cơ sở hạ tầng và tối ưu tài nguyên bảo trì bằng dữ liệu.",
     icon: Activity,
     color: "from-orange-400 to-pink-500",
     delay: 0.7
@@ -57,7 +57,7 @@ const Features = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          Why Choose Our Platform?
+          Tại sao chọn nền tảng của chúng tôi?
         </motion.h2>
         
         <motion.p 
@@ -66,11 +66,11 @@ const Features = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          Our AI-powered system ensures accurate road assessments and automates reporting, 
-          making your infrastructure smarter, safer, and more cost-effective.
+          Hệ thống AI của chúng tôi đảm bảo đánh giá đường chính xác và tự động hóa báo cáo, 
+          giúp cơ sở hạ tầng thông minh hơn, an toàn hơn và tiết kiệm chi phí.
         </motion.p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {featuresData.map((feature, index) => (
             <motion.div
               key={index}
@@ -105,17 +105,17 @@ const Features = () => {
         >
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="text-left mb-6 md:mb-0">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">Ready to get started?</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Sẵn sàng bắt đầu?</h3>
               <p className="text-gray-600 max-w-xl">
-                Join thousands of municipalities and road maintenance teams already using our platform.
+                Tham gia cùng hàng nghìn thành phố và đội bảo trì đường bộ đang sử dụng nền tảng của chúng tôi.
               </p>
             </div>
             <div className="flex space-x-4">
               <a href="/signup" className="px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-1">
-                Sign up now !
+                Đăng ký ngay !
               </a>
               <a href="/contact" className="px-6 py-3 bg-white text-green-600 font-medium rounded-xl shadow-md border border-green-200 hover:shadow-lg transition-all hover:-translate-y-1">
-                Contact us
+                Liên hệ
               </a>
             </div>
           </div>

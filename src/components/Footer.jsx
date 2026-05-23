@@ -11,30 +11,30 @@ const Footer = () => {
           <div className="md:col-span-1">
             <div className="mb-4">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Inspectify</h2>
-              <p className="text-green-600 text-sm font-medium">AI Road Damage Detection</p>
+              <p className="text-green-600 text-sm font-medium">Phát hiện hư hỏng đường bằng AI</p>
             </div>
             <p className="text-gray-600 text-sm mb-4">
-              Automated road inspection technology powered by artificial intelligence.
+              Công nghệ kiểm tra đường tự động được hỗ trợ bởi trí tuệ nhân tạo.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-base font-bold text-gray-900 mb-3">Features</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-3">Tính năng</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/features" className="text-gray-600 hover:text-green-600 transition-colors">
-                  Damage Detection
+                  Phát hiện hư hỏng
                 </Link>
               </li>
               <li>
                 <Link to="/features" className="text-gray-600 hover:text-green-600 transition-colors">
-                  Severity Analysis
+                  Phân tích mức độ
                 </Link>
               </li>
               <li>
                 <Link to="/features" className="text-gray-600 hover:text-green-600 transition-colors">
-                  Maintenance Planning
+                  Lập kế hoạch bảo trì
                 </Link>
               </li>
             </ul>
@@ -42,21 +42,21 @@ const Footer = () => {
 
           {/* Company */}
           <div>
-            <h3 className="text-base font-bold text-gray-900 mb-3">Company</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-3">Công ty</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/about" className="text-gray-600 hover:text-green-600 transition-colors">
-                  About Us
+                  Về chúng tôi
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="text-gray-600 hover:text-green-600 transition-colors">
-                  Contact
+                  Liên hệ
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className="text-gray-600 hover:text-green-600 transition-colors">
-                  Privacy Policy
+                  Chính sách bảo mật
                 </Link>
               </li>
             </ul>
@@ -64,7 +64,7 @@ const Footer = () => {
 
           {/* Connect */}
           <div>
-            <h3 className="text-base font-bold text-gray-900 mb-3">Connect</h3>
+            <h3 className="text-base font-bold text-gray-900 mb-3">Kết nối</h3>
             <div className="flex space-x-3 mb-4">
               <a href="#" className="text-gray-500 hover:text-green-600 transition-colors">
                 <Facebook size={18} />
@@ -96,7 +96,7 @@ const Footer = () => {
           </div>
           
           <div className="hidden md:block text-xs text-gray-400">
-            Powered by AI for smarter road maintenance
+            Được hỗ trợ bởi AI cho bảo trì đường thông minh
           </div>
         </div>
       </div>

@@ -11,32 +11,32 @@ const Sidebar = ({ activeTab, setActiveTab, userName, userId }) => {
   
   // 1. Menu của Admin (Full quyền)
   const adminNavItems = [
-    { name: "Dashboard", path: "/admin", icon: <FaHome className="text-lg" /> },
+    { name: "Dashboard", label: "Bảng điều khiển", path: "/admin", icon: <FaHome className="text-lg" /> },
     // Đổi tên thành "Users" và đưa path về "/admin"
-    { name: "Users", path: "/admin", icon: <FaUsers className="text-lg" /> }, 
-    { name: "Image Uploads", path: "/authority", icon: <FaImage className="text-lg" /> },
-    { name: "Map", path: "/map", icon: <FaMap className="text-lg" /> },
-    { name: "View Reports", path: "/report", icon: <FaChartArea className="text-lg" /> },
-    { name: "View Feedbacks", path: "/view", icon: <FaAddressCard className="text-lg" /> },
-    { name: "Logout", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
+    { name: "Users", label: "Người dùng", path: "/admin", icon: <FaUsers className="text-lg" /> }, 
+    { name: "Image Uploads", label: "Ảnh tải lên", path: "/authority", icon: <FaImage className="text-lg" /> },
+    { name: "Map", label: "Bản đồ", path: "/map", icon: <FaMap className="text-lg" /> },
+    { name: "View Reports", label: "Xem báo cáo", path: "/report", icon: <FaChartArea className="text-lg" /> },
+    { name: "View Feedbacks", label: "Xem phản hồi", path: "/view", icon: <FaAddressCard className="text-lg" /> },
+    { name: "Logout", label: "Đăng xuất", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
   ];
 
   // 2. Menu của Cơ quan chức năng (Giống admin nhưng KHÔNG có Manage Users)
   const authorityNavItems = [
-    { name: "Dashboard", path: "/admin", icon: <FaHome className="text-lg" /> },
-    { name: "Image Uploads", path: "/authority", icon: <FaImage className="text-lg" /> },
-    { name: "Map", path: "/map", icon: <FaMap className="text-lg" /> },
-    { name: "View Reports", path: "/report", icon: <FaChartArea className="text-lg" /> },
-    { name: "View Feedbacks", path: "/view", icon: <FaAddressCard className="text-lg" /> },
-    { name: "Logout", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
+    { name: "Dashboard", label: "Bảng điều khiển", path: "/admin", icon: <FaHome className="text-lg" /> },
+    { name: "Image Uploads", label: "Ảnh tải lên", path: "/authority", icon: <FaImage className="text-lg" /> },
+    { name: "Map", label: "Bản đồ", path: "/map", icon: <FaMap className="text-lg" /> },
+    { name: "View Reports", label: "Xem báo cáo", path: "/report", icon: <FaChartArea className="text-lg" /> },
+    { name: "View Feedbacks", label: "Xem phản hồi", path: "/view", icon: <FaAddressCard className="text-lg" /> },
+    { name: "Logout", label: "Đăng xuất", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
   ];
   
   // 3. Menu của Người dân
   const citizenNavItems = [
-    { name: "Dashboard", path: "/user", icon: <FaHome className="text-lg" /> },
-    { name: "Camera", path: "/user", icon: <Camera className="text-lg" /> },
-    { name: "History", path: "/user", icon: <FaTable className="text-lg" /> },
-    { name: "Logout", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
+    { name: "Dashboard", label: "Bảng điều khiển", path: "/user", icon: <FaHome className="text-lg" /> },
+    { name: "Camera", label: "Camera", path: "/user", icon: <Camera className="text-lg" /> },
+    { name: "History", label: "Lịch sử", path: "/user", icon: <FaTable className="text-lg" /> },
+    { name: "Logout", label: "Đăng xuất", path: "/", icon: <FaSignOutAlt className="text-lg" /> },
   ];
   
   // Lựa chọn menu để hiển thị
@@ -72,7 +72,7 @@ const Sidebar = ({ activeTab, setActiveTab, userName, userId }) => {
   const getInitial = (name) => name && name.length > 0 ? name.charAt(0).toUpperCase() : "U";
 
   // Hiển thị tên Role cho ngầu
-  const displayRole = userRole === "admin" ? "Administrator" : userRole === "authority" ? "Authority" : "Citizen";
+  const displayRole = userRole === "admin" ? "Quản trị viên" : userRole === "authority" ? "Cơ quan chức năng" : "Công dân";
 
   return (
     <div className="w-64 min-w-[16rem] bg-white shadow-lg h-screen fixed left-0 top-0 overflow-y-auto z-30 border-r border-green-100">
@@ -86,7 +86,7 @@ const Sidebar = ({ activeTab, setActiveTab, userName, userId }) => {
         
         {userName && (
           <div className="bg-white rounded-lg p-4 mb-4 shadow-sm border border-green-100">
-            <p className="text-green-700 text-xs font-medium mb-2 uppercase tracking-wider">Current User</p>
+            <p className="text-green-700 text-xs font-medium mb-2 uppercase tracking-wider">Người dùng hiện tại</p>
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-800 shadow-inner border-2 border-green-200">
                 <span className="text-lg font-semibold">{getInitial(userName)}</span>
@@ -116,7 +116,7 @@ const Sidebar = ({ activeTab, setActiveTab, userName, userId }) => {
               <div className={`${activeTab === item.name ? "text-white" : "text-green-600"}`}>
                 {item.icon}
               </div>
-              <span className="font-medium">{item.name}</span>
+              <span className="font-medium">{item.label || item.name}</span>
             </li>
           ))}
         </ul>

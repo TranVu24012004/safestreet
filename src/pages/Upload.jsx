@@ -622,11 +622,11 @@ const Upload = () => {
                 <Search className="h-6 w-6 text-green-600" />
               </div>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-green-500 p-10">
-                Analyze Road Damage
+                Phân tích hư hỏng đường
               </span>
             </h1>
             <p className="text-gray-500 mt-2 max-w-xl">
-              Upload and analyze road images to detect and classify damage using our advanced AI system
+              Tải lên và phân tích ảnh đường để phát hiện và phân loại hư hỏng với hệ thống AI tiên tiến của chúng tôi
             </p>
           </div>
           
@@ -716,16 +716,16 @@ const Upload = () => {
                 <div className="bg-indigo-100 p-5 rounded-full mb-6 shadow-inner">
                   <Camera size={36} className="text-indigo-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">No Image Selected</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">Chưa chọn ảnh</h3>
                 <p className="text-gray-500 text-center max-w-md mb-8">
-                  Please navigate from the camera capture screen or select an image to analyze road damage.
+                  Vui lòng chuyển từ màn hình chụp camera hoặc chọn ảnh để phân tích hư hỏng đường.
                 </p>
                 <button
                   onClick={() => navigate('/authority')}
                   className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-xl hover:from-green-700 hover:to-green-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
                 >
                   <ChevronRight size={18} />
-                  Go to Home
+                  Về trang chủ
                 </button>
               </div>
             )}
@@ -738,7 +738,7 @@ const Upload = () => {
                     <div className="bg-green-100 p-2 rounded-lg">
                       <MapPin size={18} className="text-green-600" />
                     </div>
-                    Location Map
+                    Bản đồ vị trí
                   </h2>
                 </div>
                 <div className="h-[350px] relative">
@@ -750,8 +750,8 @@ const Upload = () => {
                         <div className="text-sm p-1">
                           <p className="font-medium text-gray-800">
                             {address === 'Fetching...' 
-                              ? 'Fetching address...' 
-                              : address || `Location: ${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}
+                              ? 'Đang lấy địa chỉ...' 
+                              : address || `Vị trí: ${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}
                           </p>
                           <p className="text-gray-600 mt-1 flex items-center gap-1">
                             <span className={`inline-block w-2 h-2 rounded-full ${
@@ -782,19 +782,19 @@ const Upload = () => {
                       <div className="bg-green-100 p-2 rounded-lg">
                         <BarChart size={18} className="text-green-600" />
                       </div>
-                      Damage Analysis
+                      Phân tích hư hỏng
                     </h2>
                   </div>
                   <div className="p-6 space-y-6">
                     <div className="bg-gray-50 rounded-xl p-5">
-                      <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3">Location Details</h3>
+                      <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3">Chi tiết vị trí</h3>
                       <div className="space-y-4">
                         <div className="flex items-start gap-3">
                           <div className="bg-white p-2 rounded-lg shadow-sm">
                             <MapPin size={18} className="text-green-500" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-800">Address</p>
+                            <p className="text-sm font-medium text-gray-800">Địa chỉ</p>
                             <p className="text-sm text-gray-600">
                               {address === 'Fetching...' 
                                 ? 'Fetching address...' 
@@ -807,7 +807,7 @@ const Upload = () => {
                             <Layers size={18} className="text-green-500" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-800">Coordinates</p>
+                            <p className="text-sm font-medium text-gray-800">Tọa độ</p>
                             <p className="text-sm text-gray-600">{lat?.toFixed(6)}, {lng?.toFixed(6)}</p>
                           </div>
                         </div>
@@ -816,7 +816,7 @@ const Upload = () => {
                             <Clock size={18} className="text-green-500" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-800">Timestamp</p>
+                            <p className="text-sm font-medium text-gray-800">Thời gian</p>
                             <p className="text-sm text-gray-600">{new Date(analysisResult.timestamp || Date.now()).toLocaleString()}</p>
                           </div>
                         </div>
@@ -827,7 +827,7 @@ const Upload = () => {
                       <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-4">Damage Assessment</h3>
                       
                       <div className="mb-5">
-                        <p className="text-sm font-medium text-gray-800 mb-3">Detected Damage Types:</p>
+                        <p className="text-sm font-medium text-gray-800 mb-3">Loại hư hỏng được phát hiện:</p>
                         <div className="flex flex-wrap gap-2">
                           {(analysisResult.vit_predictions || []).length > 0 ? (
                             (analysisResult.vit_predictions || []).map((type, i) => (
@@ -836,14 +836,14 @@ const Upload = () => {
                               </span>
                             ))
                           ) : (
-                            <span className="text-sm text-gray-500 italic">No specific damage types detected</span>
+                            <span className="text-sm text-gray-500 italic">Không phát hiện loại hư hỏng cụ thể</span>
                           )}
                         </div>
                       </div>
                       
                       <div className="space-y-4">
                         <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                          <span className="text-sm font-medium text-gray-700">Severity Level:</span>
+                          <span className="text-sm font-medium text-gray-700">Mức độ nghiêm trọng:</span>
                           <span className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${getSeverityBadge(analysisResult.severity?.level).bg} ${getSeverityBadge(analysisResult.severity?.level).text} shadow-sm`}>
                             {getSeverityBadge(analysisResult.severity?.level).icon}
                             {analysisResult.severity?.level || 'Unknown'}
@@ -852,7 +852,7 @@ const Upload = () => {
                         
                         <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
                           <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700">Damage Coverage:</span>
+                            <span className="text-sm font-medium text-gray-700">Mức độ phủ hư hỏng:</span>
                             <span className="text-sm font-bold">
                               {analysisResult.severity?.area_score?.toFixed(1) || 'N/A'}%
                             </span>
@@ -872,28 +872,28 @@ const Upload = () => {
                         </div>
                         
                         <div className="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                          <span className="text-sm font-medium text-gray-700">Repair Priority:</span>
+                          <span className="text-sm font-medium text-gray-700">Độ ưu tiên sửa chữa:</span>
                           <span className={`px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 ${
                             ['high', 'severe'].includes((analysisResult.severity?.level || '').toLowerCase())
                               ? 'bg-red-100 text-red-800 border border-red-200'
                               : 'bg-blue-100 text-blue-800 border border-blue-200'
                           }`}>
                             {['high', 'severe'].includes((analysisResult.severity?.level || '').toLowerCase())
-                              ? 'Immediate Action'
-                              : 'Schedule Repair'}
+                              ? 'Cần xử lý ngay'
+                              : 'Lên lịch sửa chữa'}
                           </span>
                         </div>
                         
                         {/* Processing Time Information */}
                         {(analysisResult.processing_time || analysisResult.clientProcessingTime) && (
                           <div className="mt-5 pt-5 border-t border-gray-200">
-                            <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3">Performance Metrics</h3>
+                            <h3 className="text-xs font-bold text-green-600 uppercase tracking-wider mb-3">Chỉ số hiệu suất</h3>
                             <div className="space-y-3 bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
                               {analysisResult.processing_time && (
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-gray-700 flex items-center gap-1.5">
                                     <Zap size={14} className="text-green-500" />
-                                    AI Processing Time:
+                                    Thời gian xử lý AI:
                                   </span>
                                   <span className="text-sm font-bold text-green-700">{analysisResult.processing_time} sec</span>
                                 </div>
@@ -902,7 +902,7 @@ const Upload = () => {
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm text-gray-700 flex items-center gap-1.5">
                                     <Clock size={14} className="text-green-500" />
-                                    Total Processing Time:
+                                    Tổng thời gian xử lý:
                                   </span>
                                   <span className="text-sm font-bold text-green-700">{analysisResult.clientProcessingTime} sec</span>
                                 </div>
@@ -919,14 +919,14 @@ const Upload = () => {
                       className="flex-1 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow"
                     >
                       <MapPin size={16} className="text-green-500" />
-                      {showMap ? 'Hide Map' : 'View on Map'}
+                      {showMap ? 'Ẩn bản đồ' : 'Xem trên bản đồ'}
                     </button>
                     <button
                       onClick={() => navigate('/report')}
                       className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-xl hover:from-green-700 hover:to-green-600 transition-all duration-300 flex items-center justify-center gap-2 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                       <FileText size={16} />
-                      View All Reports
+                      Xem tất cả báo cáo
                     </button>
                   </div>
                 </div>

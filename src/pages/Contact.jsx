@@ -120,12 +120,12 @@ const Contact = () => {
                 >
                     <div className="inline-block mb-3">
                         <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent text-sm font-semibold tracking-wider uppercase px-3 py-1 rounded-full border border-green-200">
-                            Get In Touch
+                            Liên hệ
                         </span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Contact Us</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Liên hệ</h1>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        We'd love to hear from you! Reach out for any questions, feedback, or to learn more about our services.
+                        Chúng tôi rất mong nhận phản hồi từ bạn! Liên hệ nếu bạn có câu hỏi, góp ý, hoặc muốn tìm hiểu thêm về dịch vụ của chúng tôi.
                     </p>
                 </motion.div>
             </div>
@@ -149,8 +149,8 @@ const Contact = () => {
                                     <Mail className="h-6 w-6 text-green-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Email Us</h3>
-                                    <p className="text-gray-600">We'll respond within 24 hours</p>
+                                    <h3 className="text-lg font-semibold text-gray-900">Email</h3>
+                                    <p className="text-gray-600">Chúng tôi sẽ phản hồi trong vòng 24 giờ</p>
                                 </div>
                             </div>
                             <a href="mailto:support@roadinspect.com" className="text-green-600 font-medium hover:text-green-700 transition-colors">
@@ -167,8 +167,8 @@ const Contact = () => {
                                     <Phone className="h-6 w-6 text-green-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Call Us</h3>
-                                    <p className="text-gray-600">Mon-Fri from 8am to 5pm</p>
+                                    <h3 className="text-lg font-semibold text-gray-900">Gọi điện</h3>
+                                    <p className="text-gray-600">Thứ 2 - Thứ 6, 8h đến 17h</p>
                                 </div>
                             </div>
                             <a href="tel:+1234567890" className="text-green-600 font-medium hover:text-green-700 transition-colors">
@@ -185,8 +185,8 @@ const Contact = () => {
                                     <MapPin className="h-6 w-6 text-green-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Visit Us</h3>
-                                    <p className="text-gray-600">Admin office</p>
+                                    <h3 className="text-lg font-semibold text-gray-900">Địa chỉ</h3>
+                                    <p className="text-gray-600">Văn phòng quản trị</p>
                                 </div>
                             </div>
                             <p className="text-gray-700">
@@ -204,14 +204,14 @@ const Contact = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.3 }}
                     >
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Gửi tin nhắn cho chúng tôi</h2>
                         
                         {success && (
                             <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-md flex items-start">
                                 <CheckCircle className="text-green-500 mr-3 flex-shrink-0 mt-0.5" size={20} />
                                 <div>
-                                    <p className="text-green-800 font-medium">Message sent successfully!</p>
-                                    <p className="text-green-700 mt-1">Thank you for reaching out. We'll get back to you shortly.</p>
+                                    <p className="text-green-800 font-medium">Tin nhắn đã gửi thành công!</p>
+                                    <p className="text-green-700 mt-1">Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi sớm.</p>
                                 </div>
                             </div>
                         )}
@@ -220,7 +220,7 @@ const Contact = () => {
                             <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md flex items-start">
                                 <AlertCircle className="text-red-500 mr-3 flex-shrink-0 mt-0.5" size={20} />
                                 <div>
-                                    <p className="text-red-800 font-medium">There was a problem</p>
+                                    <p className="text-red-800 font-medium">Đã xảy ra sự cố</p>
                                     <p className="text-red-700 mt-1">{error}</p>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@ const Contact = () => {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                                 <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <User size={18} className="text-gray-400" />
@@ -241,13 +241,13 @@ const Contact = () => {
                                             value={formData.name}
                                             onChange={handleChange}
                                             className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                            placeholder="John Doe"
+                                            placeholder="Nguyễn Văn A"
                                             required
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <Mail size={18} className="text-gray-400" />
@@ -259,7 +259,7 @@ const Contact = () => {
                                             value={formData.email}
                                             onChange={handleChange}
                                             className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                            placeholder="you@example.com"
+                                            placeholder="ban@vi.du"
                                             required
                                         />
                                     </div>
@@ -267,7 +267,7 @@ const Contact = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
                                 <input
                                     type="text"
                                     id="subject"
@@ -275,13 +275,13 @@ const Contact = () => {
                                     value={formData.subject}
                                     onChange={handleChange}
                                     className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                    placeholder="How can we help you?"
+                                    placeholder="Chúng tôi có thể giúp gì cho bạn?"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Tin nhắn</label>
                                 <div className="relative">
                                     <div className="absolute top-3 left-3 flex items-start pointer-events-none">
                                         <MessageSquare size={18} className="text-gray-400" />
@@ -293,7 +293,7 @@ const Contact = () => {
                                         onChange={handleChange}
                                         rows="5"
                                         className="pl-10 block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
-                                        placeholder="Tell us what you need help with..."
+                                        placeholder="Cho chúng tôi biết bạn cần hỗ trợ gì..."
                                         required
                                     />
                                 </div>
@@ -316,7 +316,7 @@ const Contact = () => {
                                     ) : (
                                         <>
                                             <Send size={18} className="mr-2" />
-                                            Send Message
+                                            Gửi tin nhắn
                                         </>
                                     )}
                                 </button>
@@ -331,31 +331,31 @@ const Contact = () => {
             {/* FAQ Section */}
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                    <p className="text-lg text-gray-600">Find answers to common questions about our services</p>
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Các câu hỏi thường gặp</h2>
+                    <p className="text-lg text-gray-600">Tìm câu trả lời cho các câu hỏi thường gặp về dịch vụ của chúng tôi</p>
                 </div>
                 
                 <div className="space-y-6">
                     {[
                         {
-                            question: " How do I upload or capture an image for damage detection?",
-                            answer: "You can either upload a road image from your device or capture one directly using your webcam in the \"Camera\" tab. Make sure the image clearly shows the road surface for accurate predictions."
+                            question: "Làm sao tôi tải lên hoặc chụp ảnh để phát hiện hư hỏng?",
+                            answer: "Bạn có thể tải ảnh đường từ thiết bị hoặc chụp trực tiếp bằng webcam ở tab \"Camera\". Đảm bảo ảnh rõ bề mặt đường để dự đoán chính xác."
                         },
                         {
-                            question: " What kind of damage can the system detect?",
-                            answer: "Our AI model can detect and classify the following types of road damage: Longitudinal Crack, Lateral Crack, Alligator Crack, Pothole."
+                            question: "Hệ thống có thể phát hiện loại hư hỏng nào?",
+                            answer: "Mô hình AI của chúng tôi có thể phát hiện và phân loại các loại hư hỏng đường: nứt dọc, nứt ngang, nứt tổ ong, ổ gà."
                         },
                         {
-                            question: " How does the app detect my location? Is it safe?",
-                            answer: "When you upload or capture an image, the app fetches your current location using your browser's GPS (with your permission). This data is securely stored with your image and helps authorities locate damage spots."
+                            question: "Ứng dụng lấy vị trí của tôi như thế nào? Có an toàn không?",
+                            answer: "Khi bạn tải lên hoặc chụp ảnh, ứng dụng lấy vị trí hiện tại qua GPS trình duyệt (với sự cho phép của bạn). Dữ liệu này được lưu trữ an toàn cùng ảnh và giúp cơ quan chức năng xác định vị trí hư hỏng."
                         },
                         {
-                            question: " Where can I see my previous uploads and results?",
-                            answer: "You can view all your past uploads along with predictions, location, and timestamps in the \"History\" or \"Saved\" tab of the dashboard."
+                            question: "Tôi có thể xem các lần tải lên và kết quả trước đây ở đâu?",
+                            answer: "Bạn có thể xem tất cả ảnh đã tải lên cùng dự đoán, vị trí và thời gian trong tab \"History\" hoặc \"Saved\" trên bảng điều khiển."
                         },
                         {
-                            question: " Is my data private and secure?",
-                            answer: "Yes. Your uploaded images, location data, and personal information (if any) are stored securely in our database. We do not share your data with third parties."
+                            question: "Dữ liệu của tôi có riêng tư và an toàn không?",
+                            answer: "Có. Ảnh tải lên, dữ liệu vị trí và thông tin cá nhân (nếu có) được lưu trữ an toàn. Chúng tôi không chia sẻ dữ liệu với bên thứ ba."
                         }
                     ].map((faq, index) => (
                         <motion.div 

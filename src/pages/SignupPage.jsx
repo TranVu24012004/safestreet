@@ -238,8 +238,8 @@ const SignupPage = () => {
           {/* Left: Signup Form */}
           <div className="w-full md:w-1/2 p-10 md:p-12">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Create an Account</h2>
-              <p className="text-gray-600">Join us to start reporting road issues</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Tạo tài khoản</h2>
+              <p className="text-gray-600">Tham gia cùng chúng tôi để bắt đầu báo cáo sự cố đường bộ</p>
             </div>
 
             {/* Success Message */}
@@ -263,13 +263,13 @@ const SignupPage = () => {
               <form className="space-y-6" onSubmit={handleVerifyOtp}>
                 <div className="bg-blue-50 p-4 rounded-lg mb-4">
                   <p className="text-sm text-blue-700">
-                    We've sent a verification code to <strong>{email}</strong>. 
-                    Please check your email (including spam folder) and enter the code below to complete your registration.
+                    Chúng tôi đã gửi mã xác thực tới <strong>{email}</strong>. 
+                    Vui lòng kiểm tra email (kể cả thư rác) và nhập mã bên dưới để hoàn tất đăng ký.
                   </p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mã xác thực</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <KeyRound size={18} className="text-gray-400" />
@@ -279,7 +279,7 @@ const SignupPage = () => {
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Enter 6-digit code"
+                      placeholder="Nhập mã 6 chữ số"
                       maxLength={6}
                       required
                     />
@@ -298,16 +298,16 @@ const SignupPage = () => {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Verifying...
+                        Đang xác thực...
                       </>
                     ) : (
                       <>
                         <CheckCircle size={18} className="mr-2" />
-                        Verify & Complete Signup
+                        Xác thực & Hoàn tất đăng ký
                       </>
                     )}
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={handleResendOtp}
@@ -315,8 +315,8 @@ const SignupPage = () => {
                     className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                   >
                     {countdown > 0 
-                      ? `Resend code in ${countdown}s` 
-                      : "Didn't receive the code? Resend"}
+                      ? `Gửi lại mã sau ${countdown}s` 
+                      : "Chưa nhận được mã? Gửi lại"}
                   </button>
                   
                   <button
@@ -337,7 +337,7 @@ const SignupPage = () => {
               /* Initial Signup Form */
               <form className="space-y-6" onSubmit={handleRequestOtp}>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <User size={18} className="text-gray-400" />
@@ -347,7 +347,7 @@ const SignupPage = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Your full name"
+                      placeholder="Họ và tên của bạn"
                       required
                     />
                   </div>
@@ -364,14 +364,14 @@ const SignupPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="you@example.com"
+                      placeholder="ban@vi.du"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Lock size={18} className="text-gray-400" />
@@ -381,7 +381,7 @@ const SignupPage = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                      placeholder="Create a strong password"
+                      placeholder="Tạo mật khẩu mạnh"
                       required
                       minLength={8}
                     />
@@ -397,7 +397,7 @@ const SignupPage = () => {
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+                  <p className="text-xs text-gray-500 mt-1">Mật khẩu phải có ít nhất 8 ký tự</p>
                 </div>
 
                 <button
@@ -432,13 +432,13 @@ const SignupPage = () => {
             </div>
 
             <p className="text-sm text-gray-600 mt-8 text-center">
-              Already have an account?{" "}
+              Đã có tài khoản?{" "}
               <button
                 type="button"
                 className="text-blue-600 font-medium hover:text-blue-800 transition-colors"
                 onClick={() => navigate("/login")}
               >
-                Sign in
+                Đăng nhập
               </button>
             </p>
           </div>
@@ -462,17 +462,17 @@ const SignupPage = () => {
             
             <div className="relative z-10 h-full flex flex-col justify-between p-12">
               <div>
-                <h2 className="text-3xl font-bold text-white mb-6">Join Our Road Maintenance Community</h2>
+                <h2 className="text-3xl font-bold text-white mb-6">Tham gia cộng đồng bảo trì đường bộ của chúng tôi</h2>
                 <p className="text-white mb-8 leading-relaxed">
-                  By creating an account, you'll be able to report road issues, track repairs, and help improve infrastructure in your community.
+                  Khi tạo tài khoản, bạn có thể báo cáo sự cố đường, theo dõi tiến trình sửa chữa và góp phần cải thiện cơ sở hạ tầng cho cộng đồng.
                 </p>
                 
                 <div className="space-y-4">
                   {[
-                    "Report road damage with photos and location",
-                    "Track the status of your reports",
-                    "Receive updates on nearby repairs",
-                    "Contribute to safer roads for everyone"
+                    "Báo cáo hư hỏng đường với ảnh và vị trí",
+                    "Theo dõi tình trạng báo cáo của bạn",
+                    "Nhận cập nhật về sửa chữa gần đó",
+                    "Góp phần vào đường phố an toàn hơn cho mọi người"
                   ].map((feature, index) => (
                     <div key={index} className="flex items-center">
                       <svg className="h-5 w-5 text-white/70 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

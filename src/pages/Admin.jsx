@@ -378,7 +378,7 @@ const Admin = () => {
   };
 
   const handleDeleteUser = async (id) => {
-    if(!window.confirm('XÃ¡c nháº­n xÃ³a tÃ i khoáº£n nÃ y?')) return;
+    if(!window.confirm('Xác nhận xóa tài khoản này?')) return;
     const res = await fetch(`${BACKEND_URL}/api/users/${id}`, { method: 'DELETE' });
     if (res.ok) setUsersList(usersList.filter(u => u._id !== id));
   };
@@ -403,11 +403,11 @@ const Admin = () => {
                     <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
                       <LayoutDashboard className="h-7 w-7 text-white" />
                     </div>
-                    <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+                    <h1 className="text-3xl font-bold">Bảng điều khiển quản trị</h1>
                   </div>
                   <p className="text-blue-100 max-w-2xl">
-                    Welcome back, <span className="font-medium text-white">{userName || "Admin"}</span>. 
-                    Here's your real-time overview of road condition reports and system analytics.
+                    Chào mừng bạn trở lại, <span className="font-medium text-white">{userName || "Admin"}</span>.
+                    Đây là tổng quan thời gian thực về báo cáo tình trạng đường và phân tích hệ thống.
                   </p>
                 </div>
                 <div className="mt-4 md:mt-0 flex items-center gap-3 bg-white/10 rounded-xl p-3 backdrop-blur-sm">
@@ -415,30 +415,30 @@ const Admin = () => {
                     {userName ? userName.charAt(0).toUpperCase() : 'A'}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{userName || "Admin User"}</p>
-                    <p className="text-xs text-blue-200">Administrator</p>
+                    <p className="text-sm font-medium">{userName || "Người quản trị"}</p>
+                    <p className="text-xs text-blue-200">Quản trị viên</p>
                   </div>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
                 <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <p className="text-xs text-blue-200">Today's Date</p>
+                  <p className="text-xs text-blue-200">Ngày hôm nay</p>
                   <p className="text-lg font-medium">{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                 </div>
                 <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <p className="text-xs text-blue-200">Last Login</p>
+                  <p className="text-xs text-blue-200">Đăng nhập cuối</p>
                   <p className="text-lg font-medium">Today, {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
                 <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <p className="text-xs text-blue-200">System Status</p>
+                  <p className="text-xs text-blue-200">Trạng thái hệ thống</p>
                   <p className="text-lg font-medium flex items-center">
                     <span className="h-2 w-2 bg-green-400 rounded-full mr-2"></span>
                     Operational
                   </p>
                 </div>
                 <div className="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
-                  <p className="text-xs text-blue-200">Data Updated</p>
+                  <p className="text-xs text-blue-200">Dữ liệu cập nhật</p>
                   <p className="text-lg font-medium">Just Now</p>
                 </div>
               </div>
@@ -449,7 +449,7 @@ const Admin = () => {
               <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-green-500 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Reports</h3>
+                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Tổng báo cáo</h3>
                     {loading.stats ? (
                       <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
                     ) : (
@@ -458,7 +458,7 @@ const Admin = () => {
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <p className="text-sm text-green-600 flex items-center font-medium">
                         <TrendingUp className="h-4 w-4 mr-1" />
-                        <span>{reportStats.total > 0 ? `${Math.round(reportStats.reviewed / reportStats.total * 100)}% reviewed` : 'No reports yet'}</span>
+                        <span>{reportStats.total > 0 ? `${Math.round(reportStats.reviewed / reportStats.total * 100)}% đã đánh giá` : 'Chưa có báo cáo'}</span>
                       </p>
                     </div>
                   </div>
@@ -471,7 +471,7 @@ const Admin = () => {
               <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-yellow-500 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Pending Review</h3>
+                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Đang chờ xét duyệt</h3>
                     {loading.stats ? (
                       <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
                     ) : (
@@ -480,7 +480,7 @@ const Admin = () => {
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <p className="text-sm text-yellow-600 flex items-center font-medium">
                         <Clock className="h-4 w-4 mr-1" />
-                        <span>Awaiting action</span>
+                        <span>Đang chờ xử lý</span>
                       </p>
                     </div>
                   </div>
@@ -493,7 +493,7 @@ const Admin = () => {
               <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-blue-500 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Reviewed</h3>
+                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Đã xử lý</h3>
                     {loading.stats ? (
                       <div className="h-9 w-16 bg-gray-200 animate-pulse rounded mt-1"></div>
                     ) : (
@@ -502,7 +502,7 @@ const Admin = () => {
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <p className="text-sm text-blue-600 flex items-center font-medium">
                         <CheckCircle className="h-4 w-4 mr-1" />
-                        <span>Processed reports</span>
+                        <span>Báo cáo đã xử lý</span>
                       </p>
                     </div>
                   </div>
@@ -515,14 +515,14 @@ const Admin = () => {
               <div className="bg-white p-6 rounded-2xl shadow-md border-l-4 border-purple-500 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Total Users</h3>
+                    <h3 className="text-gray-500 text-sm font-medium uppercase tracking-wider">Tổng người dùng</h3>
                     <p className="text-4xl font-bold text-gray-800 mt-2">
                       {userId && userId.startsWith('admin_') ? userCount : 1}
                     </p>
                     <div className="mt-4 pt-3 border-t border-gray-100">
                       <p className="text-sm text-purple-600 flex items-center font-medium">
                         <TrendingUp className="h-4 w-4 mr-1" />
-                        <span>{userId && userId.startsWith('admin_') ? 'Registered accounts' : 'Currently active'}</span>
+                        <span>{userId && userId.startsWith('admin_') ? 'Tài khoản đăng ký' : 'Đang hoạt động'}</span>
                       </p>
                     </div>
                   </div>
@@ -542,9 +542,9 @@ const Admin = () => {
                   <div>
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-1">
                       <Activity className="h-5 w-5 text-blue-600" />
-                      Weekly Report Activity
+                      Hoạt động báo cáo trong tuần
                     </h2>
-                    <p className="text-sm text-gray-500">Reports submitted over the past week</p>
+                    <p className="text-sm text-gray-500">Báo cáo đã gửi trong tuần qua</p>
                   </div>
                   <div className="bg-blue-50 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
                     <Calendar className="h-3.5 w-3.5 mr-1" />
@@ -606,8 +606,8 @@ const Admin = () => {
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center bg-blue-50 p-8 rounded-xl">
                         <Activity className="h-12 w-12 text-blue-300 mx-auto mb-3" />
-                        <p className="text-gray-600 font-medium">No weekly data available</p>
-                        <p className="text-gray-500 text-sm mt-1">Check back later for updates</p>
+                        <p className="text-gray-600 font-medium">Không có dữ liệu tuần</p>
+                        <p className="text-gray-500 text-sm mt-1">Quay lại sau để xem cập nhật</p>
                       </div>
                     </div>
                   )}
@@ -615,7 +615,7 @@ const Admin = () => {
                 {weeklyReportData.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100 text-sm">
                     <div className="text-gray-500">
-                      <span className="font-medium text-gray-700">Total:</span> {weeklyReportData.reduce((sum, item) => sum + item.reports, 0)} reports
+                      <span className="font-medium text-gray-700">Tổng:</span> {weeklyReportData.reduce((sum, item) => sum + item.reports, 0)} báo cáo
                     </div>
                   </div>
                 )}
@@ -628,9 +628,9 @@ const Admin = () => {
                   <div>
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-1">
                       <BarChartIcon className="h-5 w-5 text-green-600" />
-                      Damage Type Distribution
+                      Phân bố loại hư hỏng
                     </h2>
-                    <p className="text-sm text-gray-500">Breakdown of reported road damage types</p>
+                    <p className="text-sm text-gray-500">Phân tích các loại hư hỏng đường được báo cáo</p>
                   </div>
                   <div className="bg-green-50 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
                     <Clock className="h-3.5 w-3.5 mr-1" />
@@ -687,8 +687,8 @@ const Admin = () => {
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center bg-green-50 p-8 rounded-xl">
                         <BarChartIcon className="h-12 w-12 text-green-300 mx-auto mb-3" />
-                        <p className="text-gray-600 font-medium">No damage data available</p>
-                        <p className="text-gray-500 text-sm mt-1">Submit reports to see distribution</p>
+                        <p className="text-gray-600 font-medium">Không có dữ liệu hư hỏng</p>
+                        <p className="text-gray-500 text-sm mt-1">Gửi báo cáo để xem phân bố</p>
                       </div>
                     </div>
                   )}
@@ -696,7 +696,7 @@ const Admin = () => {
                 {damageTypeData.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100 text-sm">
                     <div className="text-gray-500">
-                      <span className="font-medium text-gray-700">Most common:</span> {damageTypeData.sort((a, b) => b.value - a.value)[0]?.name}
+                      <span className="font-medium text-gray-700">Phổ biến nhất:</span> {damageTypeData.sort((a, b) => b.value - a.value)[0]?.name}
                     </div>
                   </div>
                 )}
@@ -711,9 +711,9 @@ const Admin = () => {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-1">
                     <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                    Severity Breakdown
+                    Phân tích mức độ
                   </h2>
-                  <p className="text-sm text-gray-500">Distribution of report severity levels</p>
+                  <p className="text-sm text-gray-500">Phân bố mức độ nghiêm trọng của báo cáo</p>
                 </div>
                 <div className="h-[250px] mt-4">
                   {loading.severity ? (
@@ -766,8 +766,8 @@ const Admin = () => {
                     <div className="h-full w-full flex items-center justify-center">
                       <div className="text-center bg-yellow-50 p-8 rounded-xl">
                         <AlertTriangle className="h-12 w-12 text-yellow-300 mx-auto mb-3" />
-                        <p className="text-gray-600 font-medium">No severity data available</p>
-                        <p className="text-gray-500 text-sm mt-1">Submit reports to see breakdown</p>
+                        <p className="text-gray-600 font-medium">Không có dữ liệu mức độ</p>
+                        <p className="text-gray-500 text-sm mt-1">Gửi báo cáo để xem phân tích</p>
                       </div>
                     </div>
                   )}
@@ -776,7 +776,7 @@ const Admin = () => {
                   <div className="mt-4 pt-4 border-t border-gray-100">
                     <div>
                       <div className="text-sm text-gray-500">
-                        <span className="font-medium text-gray-700">Highest:</span> {severityData.sort((a, b) => b.value - a.value)[0]?.name}
+                        <span className="font-medium text-gray-700">Cao nhất:</span> {severityData.sort((a, b) => b.value - a.value)[0]?.name}
                       </div>
                     </div>
                   </div>
@@ -798,7 +798,7 @@ const Admin = () => {
                     onClick={() => navigate('/report')}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors flex items-center"
                   >
-                    View All
+                    Xem tất cả
                     <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
@@ -825,11 +825,11 @@ const Admin = () => {
                       <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Severity</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Vị trí</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Loại</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mức độ</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -891,13 +891,13 @@ const Admin = () => {
                     
                     <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
                       <div className="text-sm text-gray-500">
-                        Showing {recentReports.length} of {reportStats.total} reports
+                        Hiển thị {recentReports.length} trong tổng số {reportStats.total} báo cáo
                       </div>
                       <button 
                         onClick={() => navigate('/report')}
                         className="text-indigo-600 font-medium text-sm hover:underline flex items-center"
                       >
-                        See all reports
+                        Xem tất cả báo cáo
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
@@ -908,13 +908,13 @@ const Admin = () => {
                   <div className="text-center py-12">
                     <div className="bg-indigo-50 p-8 rounded-xl inline-block">
                       <FileText className="h-12 w-12 text-indigo-300 mx-auto mb-3" />
-                      <p className="text-gray-600 font-medium mb-2">No reports available</p>
-                      <p className="text-gray-500 text-sm mb-4">Reports will appear here once they are submitted</p>
+                      <p className="text-gray-600 font-medium mb-2">Chưa có báo cáo</p>
+                      <p className="text-gray-500 text-sm mb-4">Báo cáo sẽ xuất hiện ở đây khi được gửi</p>
                       <button 
                         onClick={() => navigate('/report')}
                         className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
                       >
-                        Create Report
+                        Tạo báo cáo
                       </button>
                     </div>
                   </div>
@@ -966,7 +966,7 @@ const Admin = () => {
                             onClick={() => handleDeleteUser(user._id)}
                             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                           >
-                            XÃ³a
+                            Xóa
                           </button>
                         </td>
                       </tr>

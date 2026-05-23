@@ -41,29 +41,29 @@ export default function AboutUs() {
         >
           <div className="inline-block mb-2">
             <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent text-sm font-semibold tracking-wider uppercase px-3 py-1 rounded-full border border-green-200">
-              About Our Company
+              Về công ty chúng tôi
             </span>
           </div>
-          
+
           <h1 className="text-5xl md:text-6xl font-extrabold leading-tight text-gray-900">
             <span className="bg-gradient-to-br from-green-600 to-teal-600 bg-clip-text text-transparent">
-              AI-Powered Inspections
-            </span> for Modern Cities
+              Kiểm tra bằng AI
+            </span> cho thành phố hiện đại
           </h1>
           
           <p className="text-gray-600 text-xl leading-relaxed">
-            Turn infrastructure issues into actionable insights — instantly, intelligently, and automatically. We're revolutionizing how cities maintain their roads.
+            Biến các vấn đề cơ sở hạ tầng thành những thông tin hành động — tức thì, thông minh và tự động. Chúng tôi đang cách mạng hóa cách các thành phố bảo trì đường bộ.
           </p>
           
           <div className="flex flex-wrap gap-4">
             <Link to="/signup">
               <button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg transition-all hover:-translate-y-1">
-                Start now →
+                Bắt đầu ngay →
               </button>
             </Link>
             <Link to="/contact">
               <button className="bg-white border border-gray-300 text-gray-700 hover:text-green-700 hover:border-green-300 px-8 py-4 rounded-xl font-semibold shadow-md transition-all hover:-translate-y-1">
-                Contact Us
+                Liên hệ
               </button>
             </Link>
           </div>
@@ -109,21 +109,21 @@ export default function AboutUs() {
           >
             <div className="inline-block mb-2">
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent text-sm font-semibold tracking-wider uppercase">
-                Our Vision & Mission
+                Tầm nhìn & Sứ mệnh
               </span>
             </div>
             
-            <h2 className="text-4xl font-bold text-gray-900">Transforming Urban Infrastructure</h2>
+            <h2 className="text-4xl font-bold text-gray-900">Chuyển đổi cơ sở hạ tầng đô thị</h2>
             
             <p className="text-gray-700 text-lg leading-relaxed">
-              We're driven by a vision to make inspections effortless and intelligent. With <strong>Vision Transformers (ViT)</strong>, we deliver AI precision for real-world infrastructure challenges.
+              Chúng tôi hướng tới mục tiêu giúp kiểm tra trở nên dễ dàng và thông minh. Với <strong>Vision Transformer (ViT)</strong>, chúng tôi mang lại độ chính xác AI cho thách thức cơ sở hạ tầng thực tế.
             </p>
             
             <div className="space-y-4">
               {[
-                "Pixel-perfect damage detection with 98% accuracy",
-                "Prioritized repairs using AI insights and predictive analytics",
-                "Safer, smarter urban planning through data-driven decisions"
+                "Phát hiện hư hỏng chính xác đến từng điểm ảnh với độ chính xác 98%",
+                "Ưu tiên sửa chữa dựa trên thông tin AI và phân tích dự đoán",
+                "Kế hoạch đô thị an toàn hơn, thông minh hơn bằng các quyết định dựa trên dữ liệu"
               ].map((item, index) => (
                 <div key={index} className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
@@ -151,12 +151,12 @@ export default function AboutUs() {
           <motion.div variants={fadeIn}>
             <div className="inline-block mb-3">
               <span className="bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent text-sm font-semibold tracking-wider uppercase px-3 py-1 rounded-full border border-green-200">
-                Our Impact
+                Tác động của chúng tôi
               </span>
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Driving Real Results</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Mang lại kết quả thực tế</h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our AI-powered platform has transformed infrastructure management for cities worldwide.
+              Nền tảng AI của chúng tôi đã chuyển đổi quản lý cơ sở hạ tầng cho các thành phố trên toàn cầu.
             </p>
           </motion.div>
         </div>
@@ -165,22 +165,22 @@ export default function AboutUs() {
           {[
             { 
               title: "98%", 
-              subtitle: "Detection Accuracy", 
-              description: "Our AI consistently identifies road damage with near-perfect precision.",
+              subtitle: "Độ chính xác phát hiện", 
+              description: "AI của chúng tôi liên tục xác định hư hỏng đường với độ chính xác gần như hoàn hảo.",
               icon: BarChart2,
               color: "from-green-400 to-green-600"
             },
             { 
               title: "10x", 
-              subtitle: "Faster Than Manual", 
-              description: "Automated inspections that save thousands of work hours annually.",
+              subtitle: "Nhanh hơn thủ công", 
+              description: "Kiểm tra tự động giúp tiết kiệm hàng ngàn giờ làm việc mỗi năm.",
               icon: Zap,
               color: "from-teal-400 to-teal-600" 
             },
             { 
               title: "24/7", 
-              subtitle: "Automated Monitoring", 
-              description: "Continuous infrastructure assessment without human intervention.",
+              subtitle: "Giám sát tự động", 
+              description: "Đánh giá cơ sở hạ tầng liên tục mà không cần can thiệp của con người.",
               icon: Shield,
               color: "from-cyan-400 to-cyan-600" 
             },
@@ -230,17 +230,17 @@ export default function AboutUs() {
             <div className="p-8 md:p-12 flex flex-col justify-center">
               <h4 className="text-2xl font-bold text-gray-900 mb-4">Get Started Today</h4>
               <p className="text-gray-600 mb-6">
-                Start a demo or start your journey to see how our platform can work for your city.
+                Bắt đầu demo hoặc bắt đầu hành trình của bạn để xem nền tảng này hoạt động như thế nào cho thành phố của bạn.
               </p>
               <div className="space-y-3">
                 <Link to="/signup" className="block">
                   <button className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md transition-all">
-                    Start now !
+                    Bắt đầu ngay!
                   </button>
                 </Link>
                 <Link to="/demo" className="block">
                   <button className="w-full bg-white border border-gray-300 text-gray-700 hover:text-green-700 hover:border-green-300 px-6 py-3 rounded-xl font-semibold transition-all">
-                    Start a Demo
+                    Bắt đầu Demo
                   </button>
                 </Link>
               </div>

@@ -116,7 +116,12 @@ const AuthorityPage = () => {
   }, [userId]); // Re-connect if userId changes
 
   // Status options for filtering
-  const statuses = ["Pending", "Processed", "Critical", "Resolved"];
+  const statuses = [
+    { value: "Pending", label: "Đang chờ" },
+    { value: "Processed", label: "Đã xử lý" },
+    { value: "Critical", label: "Nghiêm trọng" },
+    { value: "Resolved", label: "Đã giải quyết" },
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -158,11 +163,11 @@ const AuthorityPage = () => {
                 if (parts.length > 1) {
                   item.userName = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
                 } else {
-                  item.userName = 'Unknown User';
+                  item.userName = 'Người dùng không xác định';
                 }
               }
             } else {
-              item.userName = 'Unknown User';
+              item.userName = 'Người dùng không xác định';
             }
           }
           
@@ -192,7 +197,7 @@ const AuthorityPage = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
-        setError("Could not fetch data. Please try again later.");
+        setError("Không thể tải dữ liệu. Vui lòng thử lại sau.");
         setLoading(false);
       }
     };
@@ -386,8 +391,8 @@ const AuthorityPage = () => {
               {imageModal.item && (
                 <>
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">LOCATION</h4>
-                    <p className="text-gray-900 mt-1">{imageModal.item.address || 'No address available'}</p>
+                    <h4 className="text-sm font-medium text-gray-500">VỊ TRÍ</h4>
+                    <p className="text-gray-900 mt-1">{imageModal.item.address || 'Không có địa chỉ'}</p>
                     <p className="text-sm text-gray-500 mt-1">
                       {imageModal.item.latitude ? (typeof imageModal.item.latitude === 'number' ? imageModal.item.latitude.toFixed(6) : imageModal.item.latitude) : 'N/A'}, 
                       {imageModal.item.longitude ? (typeof imageModal.item.longitude === 'number' ? imageModal.item.longitude.toFixed(6) : imageModal.item.longitude) : 'N/A'}
@@ -395,20 +400,20 @@ const AuthorityPage = () => {
                   </div>
                   
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">UPLOADED BY</h4>
+                    <h4 className="text-sm font-medium text-gray-500">NGƯỜI ĐĂNG</h4>
                     <div className="flex items-center mt-1">
                       <div className="h-8 w-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-2">
                         {imageModal.item.userName ? imageModal.item.userName.charAt(0).toUpperCase() : 'U'}
                       </div>
                       <div>
-                        <p className="text-gray-900">{imageModal.item.userName || 'Unknown User'}</p>
-                        <p className="text-sm text-gray-500">{imageModal.item.userId || 'No ID'}</p>
+                        <p className="text-gray-900">{imageModal.item.userName || 'Người dùng không xác định'}</p>
+                        <p className="text-sm text-gray-500">{imageModal.item.userId || 'Không có ID'}</p>
                       </div>
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">TIMESTAMP</h4>
+                    <h4 className="text-sm font-medium text-gray-500">THỜI GIAN</h4>
                     <p className="text-gray-900 mt-1">
                       {new Date(imageModal.item.timestamp).toLocaleDateString()} at {' '}
                       {new Date(imageModal.item.timestamp).toLocaleTimeString()}
@@ -447,11 +452,11 @@ const AuthorityPage = () => {
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
               <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Confirm Deletion</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Xác nhận xóa</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Are you sure you want to delete this item? <br />
+              Bạn có chắc muốn xóa mục này? <br />
               <span className="font-medium text-gray-700">{deleteModal.itemName}</span><br />
-              This action cannot be undone.
+              Hành động này không thể hoàn tác.
             </p>
           </div>
           
@@ -476,7 +481,7 @@ const AuthorityPage = () => {
               ) : (
                 <>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  Xóa
                 </>
               )}
             </button>
@@ -501,10 +506,10 @@ const AuthorityPage = () => {
       <div className="flex-1 px-6 py-8 overflow-auto ml-64">
         <header className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Road Condition Monitoring
+            Giám sát tình trạng đường
           </h1>
           <p className="text-gray-500">
-            View and analyze road conditions from uploaded images
+            Xem và phân tích tình trạng đường từ các ảnh đã tải lên
           </p>
         </header>
 
@@ -517,10 +522,10 @@ const AuthorityPage = () => {
                 <ImageIcon className="h-6 w-6 text-blue-500" />
               </div>
               <span className="text-xs font-medium text-blue-600 bg-blue-50 rounded-full px-2 py-1">
-                All Time
+                Tất cả thời gian
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Total Inspections</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Tổng số kiểm tra</h3>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-800">{dashboardStats.totalInspections.count}</span>
               <span className="ml-2 text-xs text-green-600">
@@ -536,10 +541,10 @@ const AuthorityPage = () => {
                 <AlertTriangle className="h-6 w-6 text-red-500" />
               </div>
               <span className="text-xs font-medium text-red-600 bg-red-50 rounded-full px-2 py-1">
-                Critical
+                Nghiêm trọng
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">High Severity Issues</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Số vụ nghiêm trọng</h3>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-800">
                 {dashboardStats.highSeverityIssues.count}
@@ -557,16 +562,16 @@ const AuthorityPage = () => {
                 <Clock className="h-6 w-6 text-amber-500" />
               </div>
               <span className="text-xs font-medium text-amber-600 bg-amber-50 rounded-full px-2 py-1">
-                Performance
+                Hiệu suất
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Avg. Processing Time</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Thời gian xử lý TB</h3>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-800">
                 {dashboardStats.processingTime.average}s
               </span>
               <span className="ml-2 text-xs text-gray-500">
-                per image
+                mỗi ảnh
               </span>
             </div>
           </div>
@@ -578,16 +583,16 @@ const AuthorityPage = () => {
                 <CheckCircle className="h-6 w-6 text-green-500" />
               </div>
               <span className="text-xs font-medium text-green-600 bg-green-50 rounded-full px-2 py-1">
-                Efficiency
+                Hiệu quả
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Resolution Rate</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">Tỷ lệ giải quyết</h3>
             <div className="flex items-baseline">
               <span className="text-2xl font-bold text-gray-800">
                 {dashboardStats.resolutionRate.percentage}%
               </span>
               <span className="ml-2 text-xs text-green-600">
-                {dashboardStats.resolutionRate.resolvedLastMonth} in last 30 days
+                {dashboardStats.resolutionRate.resolvedLastMonth} trong 30 ngày qua
               </span>
             </div>
           </div>
@@ -600,7 +605,7 @@ const AuthorityPage = () => {
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by address or ID..."
+              placeholder="Tìm theo địa chỉ hoặc ID..."
               className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 transition"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -614,7 +619,7 @@ const AuthorityPage = () => {
               className="inline-flex items-center bg-white border border-gray-300 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition"
             >
               <FaFilter className="mr-2" />
-              Filters
+              Bộ lọc
               {isFilterOpen ? <ChevronUp className="ml-2" /> : <ChevronDown className="ml-2" />}
             </button>
             
@@ -643,7 +648,7 @@ const AuthorityPage = () => {
         {isFilterOpen && (
           <div className="bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-200">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-medium text-gray-700">Advanced Filters</h3>
+              <h3 className="font-medium text-gray-700">Bộ lọc nâng cao</h3>
               <button 
                 onClick={() => setIsFilterOpen(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -654,12 +659,12 @@ const AuthorityPage = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="flex flex-col">
-                <label className="text-sm text-gray-600 mb-1">Location</label>
+                <label className="text-sm text-gray-600 mb-1">Vị trí</label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Filter by address"
+                    placeholder="Lọc theo địa chỉ"
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200"
                     value={filters.address}
                     onChange={(e) => setFilters({ ...filters, address: e.target.value })}
@@ -668,7 +673,7 @@ const AuthorityPage = () => {
               </div>
               
               <div className="flex flex-col">
-                <label className="text-sm text-gray-600 mb-1">Date</label>
+                <label className="text-sm text-gray-600 mb-1">Ngày</label>
                 <div className="relative">
                   <CalendarDays className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
@@ -681,15 +686,15 @@ const AuthorityPage = () => {
               </div>
               
               <div className="flex flex-col">
-                <label className="text-sm text-gray-600 mb-1">Status</label>
+                <label className="text-sm text-gray-600 mb-1">Trạng thái</label>
                 <select
                   className="w-full pl-3 pr-4 py-2 rounded-lg border border-gray-300 focus:border-green-500 focus:ring focus:ring-green-200"
                   value={filters.status}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                 >
-                  <option value="all">All Statuses</option>
+                  <option value="all">Tất cả trạng thái</option>
                   {statuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
+                    <option key={status.value} value={status.value}>{status.label}</option>
                   ))}
                 </select>
               </div>
@@ -700,13 +705,13 @@ const AuthorityPage = () => {
                 onClick={clearFilters}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 mr-2"
               >
-                Clear All
+                Xóa bộ lọc
               </button>
               <button 
                 onClick={() => setIsFilterOpen(false)}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
               >
-                Apply Filters
+                Áp dụng
               </button>
             </div>
           </div>
@@ -715,7 +720,7 @@ const AuthorityPage = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center mt-10 text-blue-600 bg-white p-8 rounded-xl shadow-sm">
             <Loader2 className="animate-spin h-8 w-8 mb-4" />
-            <p>Loading road data...</p>
+            <p>Đang tải dữ liệu đường...</p>
           </div>
         ) : error ? (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl shadow-sm">
@@ -745,7 +750,7 @@ const AuthorityPage = () => {
                         <th className="px-6 py-3 font-medium">
                           <div className="flex items-center">
                             <ImageIcon className="inline w-4 h-4 mr-1 text-gray-400" />
-                            <span>Image</span>
+                            <span>Ảnh</span>
                           </div>
                         </th>
                         <th
@@ -754,7 +759,7 @@ const AuthorityPage = () => {
                         >
                           <div className="flex items-center">
                             <MapPin className="inline w-4 h-4 mr-1 text-gray-400" />
-                            <span>Location</span>
+                            <span>Vị trí</span>
                             {sortConfig.key === "address" && (
                               sortConfig.direction === "asc" 
                                 ? <FaSortAmountUp className="ml-1 text-green-600" />
@@ -768,7 +773,7 @@ const AuthorityPage = () => {
                         >
                           <div className="flex items-center">
                             <CalendarDays className="inline w-4 h-4 mr-1 text-gray-400" />
-                            <span>Time</span>
+                            <span>Thời gian</span>
                             {sortConfig.key === "timestamp" && (
                               sortConfig.direction === "asc" 
                                 ? <FaSortAmountUp className="ml-1 text-green-600" />
@@ -778,7 +783,7 @@ const AuthorityPage = () => {
                         </th>
                         <th className="px-6 py-3 font-medium">
                           <div className="flex items-center">
-                            <span>Uploaded By</span>
+                            <span>Người tải lên</span>
                           </div>
                         </th>
                         <th className="px-6 py-3 text-center font-medium">Actions</th>
@@ -827,8 +832,8 @@ const AuthorityPage = () => {
                                 {item.userName ? item.userName.charAt(0).toUpperCase() : 'U'}
                               </div>
                               <div>
-                                <div className="font-medium text-gray-700">{item.userName || 'Unknown User'}</div>
-                                <div className="text-xs text-gray-500">{item.userId || 'No ID'}</div>
+                                <div className="font-medium text-gray-700">{item.userName || 'Người dùng không xác định'}</div>
+                                <div className="text-xs text-gray-500">{item.userId || 'Không có ID'}</div>
                               </div>
                             </div>
                           </td>
@@ -837,21 +842,21 @@ const AuthorityPage = () => {
                               <button
                                 onClick={() => handleViewClick(item)}
                                 className="p-1.5 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition"
-                                title="View"
+                                title="Xem"
                               >
                                 <FaEye />
                               </button>
                               <button
                                 onClick={() => handlePredictClick(item)}
                                 className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition"
-                                title="Predict"
+                                title="Dự đoán"
                               >
                                 <FaChartArea />
                               </button>
                               <button
                                 onClick={() => handleDeleteClick(item)}
                                 className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition"
-                                title="Delete"
+                                title="Xóa"
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -875,7 +880,7 @@ const AuthorityPage = () => {
                       />
                       <div className="absolute top-2 right-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          View
+                          Xem
                         </span>
                       </div>
                     </div>
@@ -897,12 +902,12 @@ const AuthorityPage = () => {
                         {new Date(item.timestamp).toLocaleString()}
                       </div>
                       <div className="mb-3">
-                        <div className="text-xs text-gray-500 mb-1">Uploaded By</div>
+                        <div className="text-xs text-gray-500 mb-1">Người đăng</div>
                         <div className="flex items-center">
                           <div className="h-6 w-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-2 text-xs">
                             {item.userName ? item.userName.charAt(0).toUpperCase() : 'U'}
                           </div>
-                          <div className="text-sm text-gray-700">{item.userName || 'Unknown User'}</div>
+                          <div className="text-sm text-gray-700">{item.userName || 'Người dùng không xác định'}</div>
                         </div>
                       </div>
                       <div className="flex space-x-2 pt-2 border-t border-gray-100">
@@ -910,13 +915,13 @@ const AuthorityPage = () => {
                           onClick={() => handleViewClick(item)}
                           className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition text-sm flex items-center justify-center"
                         >
-                          <FaEye className="mr-1" /> View
+                          <FaEye className="mr-1" /> Xem
                         </button>
                         <button
                           onClick={() => handlePredictClick(item)}
                           className="flex-1 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition text-sm flex items-center justify-center"
                         >
-                          <FaChartArea className="mr-1" /> Predict
+                          <FaChartArea className="mr-1" /> Dự đoán
                         </button>
                       </div>
                       <div className="mt-2">
@@ -924,7 +929,7 @@ const AuthorityPage = () => {
                           onClick={() => handleDeleteClick(item)}
                           className="w-full py-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition text-sm flex items-center justify-center"
                         >
-                          <Trash2 size={16} className="mr-1" /> Delete
+                          <Trash2 size={16} className="mr-1" /> Xóa
                         </button>
                       </div>
                     </div>
@@ -937,7 +942,7 @@ const AuthorityPage = () => {
             {totalPages > 1 && (
               <div className="flex justify-between items-center mt-6 bg-white rounded-lg p-3 shadow-sm border border-gray-200">
                 <div className="text-sm text-gray-500">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredData.length)} of {filteredData.length} entries
+                  Hiển thị {indexOfFirstItem + 1} đến {Math.min(indexOfLastItem, filteredData.length)} trong tổng số {filteredData.length} mục
                 </div>
                 <div className="flex space-x-1">
                   <button
@@ -1000,16 +1005,16 @@ const AuthorityPage = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-full mb-4">
               <ImageIcon className="h-8 w-8 text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No road data found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">Không tìm thấy dữ liệu đường</h3>
             <p className="text-gray-500">
-              Try adjusting your search or filter criteria
+              Thử điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc
             </p>
             {(filters.address || filters.date || filters.status !== "all" || searchTerm) && (
               <button
                 onClick={clearFilters}
                 className="mt-4 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
               >
-                Clear Filters
+                Xóa bộ lọc
               </button>
             )}
           </div>

@@ -142,7 +142,7 @@ const ViewFeed = () => {
       }
     } catch (err) {
       console.error('Error in fetchFeedbacks:', err);
-      setError('Could not load feedbacks. Please try again later.');
+      setError('Không thể tải phản hồi. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }
@@ -204,7 +204,7 @@ const ViewFeed = () => {
       // Get the feedback to access the userId
       const feedback = feedbacks.find(item => item._id === id);
       if (!feedback) {
-        throw new Error('Feedback not found');
+        throw new Error('Không tìm thấy phản hồi');
       }
       
       try {
@@ -244,8 +244,8 @@ const ViewFeed = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userId: feedback.userId,
-              title: 'Feedback Status Updated',
-              message: `Your feedback "${feedback.subject}" has been marked as ${isCompleted ? 'completed' : 'pending'}.`,
+              title: 'Trạng thái phản hồi đã cập nhật',
+              message: `Phản hồi của bạn "${feedback.subject}" đã được đánh dấu là ${isCompleted ? 'đã hoàn thành' : 'đang chờ'}.`,
               type: 'feedback',
               details: {
                 feedbackId: id,
@@ -261,10 +261,10 @@ const ViewFeed = () => {
         }
       }
       
-      showNotification(`Feedback marked as ${isCompleted ? 'completed' : 'pending'}`, 'success');
+      showNotification(`Phản hồi đã được đánh dấu là ${isCompleted ? 'đã hoàn thành' : 'đang chờ'}`, 'success');
     } catch (err) {
       console.error('Error in handleStatusChange:', err);
-      showNotification('Status updated in UI only (server unavailable)', 'success');
+      showNotification('Chỉ cập nhật giao diện người dùng (máy chủ hiện không khả dụng)', 'success');
     } finally {
       setSubmitting(false);
     }
@@ -318,8 +318,8 @@ const ViewFeed = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userId: replyModal.feedback.userId,
-              title: 'New Reply to Your Feedback',
-              message: `You have received a reply to your feedback "${replyModal.feedback.subject}".`,
+              title: 'Phản hồi mới cho phản hồi của bạn',
+              message: `Bạn đã nhận được phản hồi cho phản hồi của mình "${replyModal.feedback.subject}".`,
               type: 'feedback_reply',
               details: {
                 feedbackId: replyModal.feedback._id,
@@ -352,12 +352,12 @@ const ViewFeed = () => {
       }
       
       closeReplyModal();
-      showNotification('Reply sent successfully', 'success');
+      showNotification('Đã gửi phản hồi thành công', 'success');
     } catch (err) {
       console.error('Error in handleSendReply:', err);
       // Still close the modal and show success to improve UX in demo mode
       closeReplyModal();
-      showNotification('Reply recorded (server unavailable)', 'success');
+      showNotification('Phản hồi đã được lưu (máy chủ không khả dụng)', 'success');
     } finally {
       setSubmitting(false);
     }
@@ -443,7 +443,7 @@ const ViewFeed = () => {
             </div>
             <div className="flex-1">
               <p className="font-bold text-sm">
-                {notification.type === 'success' ? 'Success' : 'Error'}
+                {notification.type === 'success' ? 'Thành công' : 'Lỗi'}
               </p>
               <p className="text-sm text-white font-medium">{notification.message}</p>
             </div>
@@ -465,10 +465,10 @@ const ViewFeed = () => {
                   <div className="bg-white bg-opacity-20 p-2 rounded-lg mr-3">
                     <MessageSquare className="w-6 h-6 text-white" />
                   </div>
-                  Feedback Management
+                  Quản lý phản hồi
                 </h1>
                 <p className="text-white text-opacity-90 mt-1 text-m pt-20">
-                  Manage and respond to user feedback efficiently
+                  Quản lý và phản hồi ý kiến người dùng hiệu quả
                 </p>
               </div>
               <div className="flex items-center space-x-3">
@@ -481,7 +481,7 @@ const ViewFeed = () => {
                   className="flex items-center text-sm bg-white text-green-700 font-medium rounded-lg px-3 py-1.5 hover:bg-green-50 transition-colors shadow-sm"
                 >
                   <RefreshCw className="w-4 h-4 mr-1.5" />
-                  Refresh
+                  Tải lại
                 </button>
               </div>
             </div>
@@ -497,17 +497,17 @@ const ViewFeed = () => {
               <div className="bg-green-100 p-1.5 rounded-md mr-2">
                 <Filter className="w-5 h-5 text-green-600" />
               </div>
-              Search & Filters
+              Tìm kiếm & Bộ lọc
             </h2>
             <div className="flex items-center text-sm text-gray-600">
               <Clock className="w-4 h-4 mr-1.5 text-green-500" />
-              <span>Last updated: {new Date().toLocaleTimeString()}</span>
+              <span>Cập nhật lần cuối: {new Date().toLocaleTimeString()}</span>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="col-span-2">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Search Feedback</label>
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Tìm phản hồi</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <Search className="w-5 h-5 text-green-400" />
@@ -515,7 +515,7 @@ const ViewFeed = () => {
                 <input 
                   id="search"
                   type="text"
-                  placeholder="Search by name, email, subject or message content"
+                  placeholder="Tìm theo tên, email, chủ đề hoặc nội dung"
                   className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -532,7 +532,7 @@ const ViewFeed = () => {
             </div>
             
             <div>
-              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Status Filter</label>
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">Lọc trạng thái</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                   <ArrowUpDown className="w-4 h-4 text-green-400" />
@@ -543,9 +543,9 @@ const ViewFeed = () => {
                   value={filters.status}
                   onChange={(e) => setFilters({...filters, status: e.target.value})}
                 >
-                  <option value="all">All Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="completed">Completed</option>
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="pending">Đang chờ</option>
+                  <option value="completed">Đã hoàn thành</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <ChevronDown className="w-4 h-4 text-green-400" />
@@ -557,7 +557,7 @@ const ViewFeed = () => {
           <div className="mt-3 flex flex-wrap gap-2">
             {searchQuery && (
               <div className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-3 py-1 text-sm">
-                <span>Search: {searchQuery}</span>
+                <span>Tìm kiếm: {searchQuery}</span>
                 <button onClick={() => setSearchQuery('')} className="ml-1 text-green-500 hover:text-green-700">
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -565,7 +565,9 @@ const ViewFeed = () => {
             )}
             {filters.status !== 'all' && (
               <div className="inline-flex items-center bg-green-50 text-green-700 rounded-full px-3 py-1 text-sm">
-                <span>Status: {filters.status}</span>
+                <span>
+                  Trạng thái: {filters.status === 'pending' ? 'Đang chờ' : filters.status === 'completed' ? 'Đã hoàn thành' : 'Tất cả trạng thái'}
+                </span>
                 <button onClick={() => setFilters({...filters, status: 'all'})} className="ml-1 text-green-500 hover:text-green-700">
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -580,9 +582,9 @@ const ViewFeed = () => {
             <div className="bg-green-100 p-1.5 rounded-md mr-2">
               <Inbox className="w-5 h-5 text-green-600" />
             </div>
-            Feedback List
+            Danh sách phản hồi
             <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-sm">
-              {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? 'item' : 'items'}
+              {filteredFeedbacks.length} {filteredFeedbacks.length === 1 ? 'mục' : 'mục'}
             </span>
           </h2>
         </div>
@@ -596,7 +598,7 @@ const ViewFeed = () => {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-1/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('name')}>
                       <div className="flex items-center space-x-2">
                         <User className="w-4 h-4 text-green-500" />
-                        <span>Sender</span>
+                        <span>Người gửi</span>
                         {sortConfig.key === 'name' && (
                           <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
                             ▼
@@ -607,7 +609,7 @@ const ViewFeed = () => {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-2/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('subject')}>
                       <div className="flex items-center space-x-2">
                         <MessageSquare className="w-4 h-4 text-green-500" />
-                        <span>Subject</span>
+                        <span>Chủ đề</span>
                         {sortConfig.key === 'subject' && (
                           <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
                             ▼
@@ -618,7 +620,7 @@ const ViewFeed = () => {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider cursor-pointer w-1/6 hover:bg-green-100 transition-colors" onClick={() => toggleSort('dateSubmitted')}>
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-green-500" />
-                        <span>Date</span>
+                        <span>Ngày</span>
                         {sortConfig.key === 'dateSubmitted' && (
                           <span className={`text-green-600 transition-transform duration-200 ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`}>
                             ▼
@@ -629,13 +631,13 @@ const ViewFeed = () => {
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-1/12">
                       <div className="flex items-center space-x-2">
                         <Clock className="w-4 h-4 text-green-500" />
-                        <span>Status</span>
+                        <span>Trạng thái</span>
                       </div>
                     </th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-1/6">
                       <div className="flex items-center space-x-2">
                         <Bell className="w-4 h-4 text-green-500" />
-                        <span>Actions</span>
+                        <span>Hành động</span>
                       </div>
                     </th>
                   </tr>
@@ -674,7 +676,7 @@ const ViewFeed = () => {
                             : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
                         }`}>
                           <span className={`w-2 h-2 rounded-full mr-1 ${feedback.completed ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                          {feedback.completed ? 'Completed' : 'Pending'}
+                          {feedback.completed ? 'Đã hoàn thành' : 'Đang chờ'}
                         </span>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
@@ -689,14 +691,14 @@ const ViewFeed = () => {
                             }`}
                           >
                             <Check className="w-3 h-3 mr-1" />
-                            {feedback.completed ? 'Mark Pending' : 'Mark Done'}
+                            {feedback.completed ? 'Gỡ đánh dấu hoàn thành' : 'Đánh dấu hoàn thành'}
                           </button>
                           <button
                             onClick={() => openReplyModal(feedback)}
                             className="inline-flex items-center px-2.5 py-1 border border-green-600 bg-green-600 text-xs font-medium rounded-md text-white hover:bg-green-700 shadow-sm transition-all duration-200"
                           >
                             <Mail className="w-3 h-3 mr-1 text-white" />
-                            Reply
+                            Trả lời
                           </button>
                         </div>
                       </td>
@@ -707,18 +709,18 @@ const ViewFeed = () => {
             </div>
             <div className="bg-green-50 px-4 py-3 border-t border-gray-200 text-sm text-gray-600 flex justify-between items-center">
               <div>
-                Showing {filteredFeedbacks.length} of {feedbacks.length} feedbacks
+                Hiển thị {filteredFeedbacks.length} trong số {feedbacks.length} phản hồi
               </div>
               <div className="flex items-center">
-                <span className="mr-2">Sort by:</span>
+                <span className="mr-2">Sắp xếp theo:</span>
                 <select 
                   className="border border-gray-300 rounded-md text-xs py-1 px-2 focus:ring-green-500 focus:border-green-500"
                   value={sortConfig.key}
                   onChange={(e) => toggleSort(e.target.value)}
                 >
-                  <option value="dateSubmitted">Date</option>
-                  <option value="name">Sender</option>
-                  <option value="subject">Subject</option>
+                  <option value="dateSubmitted">Ngày</option>
+                  <option value="name">Người gửi</option>
+                  <option value="subject">Chủ đề</option>
                 </select>
               </div>
             </div>
@@ -729,18 +731,18 @@ const ViewFeed = () => {
               <div className="w-20 h-20 rounded-lg bg-green-50 flex items-center justify-center mb-4">
                 <Inbox className="h-10 w-10 text-green-500" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No feedbacks found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy phản hồi</h3>
               <p className="text-gray-600 mb-6">
                 {searchQuery || filters.status !== 'all' 
-                  ? 'No results match your current search or filter criteria. Try adjusting your parameters.'
-                  : 'There are no user feedbacks available in the system yet.'}
+                  ? 'Không có kết quả phù hợp với tìm kiếm hoặc bộ lọc hiện tại. Hãy thử điều chỉnh các tiêu chí.'
+                  : 'Hiện chưa có phản hồi người dùng trong hệ thống.'}
               </p>
               <button 
                 onClick={fetchFeedbacks}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 <RefreshCw className="w-4 h-4 mr-2 text-white" />
-                Refresh Data
+                Tải lại dữ liệu
               </button>
             </div>
           </div>
@@ -757,7 +759,7 @@ const ViewFeed = () => {
                   <div className="bg-white bg-opacity-20 p-1.5 rounded-md mr-2">
                     <Mail className="h-5 w-5 text-white" />
                   </div>
-                  Reply to Feedback
+                  Trả lời phản hồi
                 </h3>
                 <button 
                   onClick={closeReplyModal} 
@@ -793,18 +795,18 @@ const ViewFeed = () => {
                         : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
                     }`}>
                       <span className={`w-1.5 h-1.5 rounded-full mr-1 ${replyModal.feedback.completed ? 'bg-green-900' : 'bg-yellow-500'}`}></span>
-                      {replyModal.feedback.completed ? 'Completed' : 'Pending'}
+                      {replyModal.feedback.completed ? 'Đã hoàn thành' : 'Đang chờ'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="border-b border-green-200 mb-3 pb-3">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Subject:</h4>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Chủ đề:</h4>
                   <p className="text-sm text-gray-800">{replyModal.feedback.subject}</p>
                 </div>
                 
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Message:</h4>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-1">Nội dung:</h4>
                   <p className="text-sm text-gray-800 whitespace-pre-line">{replyModal.feedback.message}</p>
                 </div>
               </div>
@@ -814,14 +816,14 @@ const ViewFeed = () => {
                   <div className="bg-green-100 p-1 rounded-md mr-1.5">
                     <MessageSquare className="w-4 h-4 text-gray-900" />
                   </div>
-                  Your Response
+                  Phản hồi của bạn
                 </label>
                 <div className="relative">
                   <textarea
                     id="reply"
                     rows={5}
                     className="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 text-gray-900"
-                    placeholder="Type your reply here..."
+                    placeholder="Nhập phản hồi tại đây..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                   ></textarea>
@@ -831,7 +833,7 @@ const ViewFeed = () => {
                 </div>
                 <div className="mt-2 flex items-center text-sm text-gray-800">
                   <ExternalLink className="w-3.5 h-3.5 mr-1.5 text-green-500" />
-                  <span>Your reply will be sent from <span className="font-medium text-gray-700">venkatmadhu232@gmail.com</span></span>
+                  <span>Phản hồi của bạn sẽ được gửi từ <span className="font-medium text-gray-700">venkatmadhu232@gmail.com</span></span>
                 </div>
               </div>
               
@@ -840,7 +842,7 @@ const ViewFeed = () => {
                   {!replyModal.feedback.completed && 
                     <div className="flex items-center bg-green-50 px-2 py-1 rounded-md">
                       <CheckCircle className="w-4 h-4 mr-1.5 text-green-600" />
-                      <span>This feedback will be marked as completed</span>
+                      <span>Phản hồi này sẽ được đánh dấu là đã hoàn thành</span>
                     </div>
                   }
                 </div>
@@ -849,7 +851,7 @@ const ViewFeed = () => {
                     onClick={closeReplyModal}
                     className="px-3 py-1.5 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 shadow-sm transition-all duration-200 font-medium"
                   >
-                    Cancel
+                    Hủy
                   </button>
                   <button
                     onClick={handleSendReply}
@@ -861,12 +863,12 @@ const ViewFeed = () => {
                     {submitting ? (
                       <>
                         <Loader2 className="animate-spin w-4 h-4 mr-1.5 text-white" />
-                        Sending...
+                        Đang gửi...
                       </>
                     ) : (
                       <>
                         <Mail className="w-4 h-4 mr-1.5 text-white" />
-                        Send Reply
+                        Gửi phản hồi
                       </>
                     )}
                   </button>

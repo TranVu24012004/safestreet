@@ -70,7 +70,7 @@ const Navbar = () => {
             <img src="/lago.png" alt="Inspectify Logo" className="w-full h-full object-contain" />
           </div>
           <div className="text-green-800 text-2xl font-bold tracking-wide">
-            Inspectify
+            Giao thông thông minh
           </div>
         </div>
 
@@ -87,7 +87,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center">
           <Link to="/signup">
             <button className="bg-blue-800 text-white hover:bg-green-800 rounded-full px-5 py-2 text-sm font-medium transition duration-300">
-              Get Started
+              Bắt đầu
             </button>
           </Link>
         </div>
@@ -126,7 +126,7 @@ const Navbar = () => {
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              Home
+              Giới thiệu
             </Link>
             <Link 
               to="/about" 
@@ -136,7 +136,7 @@ const Navbar = () => {
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              About Us
+              Về chúng tôi
             </Link>
             <Link 
               to="/login" 
@@ -146,7 +146,7 @@ const Navbar = () => {
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
-              Login
+              Đăng nhập
             </Link>
             <Link 
               to="/demo" 
@@ -166,7 +166,7 @@ const Navbar = () => {
               <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              Contact Us
+              Liên hệ
             </Link>
             <div className="px-6 py-4 space-y-4">
               <Link 
@@ -177,7 +177,7 @@ const Navbar = () => {
                 <svg className="w-5 h-5 mr-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
-                Get Started
+                Bắt đầu
               </Link>
             </div>
           </nav>

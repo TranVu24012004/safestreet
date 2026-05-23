@@ -6,7 +6,7 @@ const Capture = ({ setLocation }) => {
 
     const getLocation = async () => {
         if (!navigator.geolocation) {
-            setError("Geolocation is not supported by your browser.");
+            setError("Trình duyệt của bạn không hỗ trợ định vị địa lý.");
             return;
         }
 
@@ -25,12 +25,12 @@ const Capture = ({ setLocation }) => {
                     const data = await response.json();
                     setLocation({ lat, lon, address: data.display_name });
                 } catch (err) {
-                    setError("Failed to fetch address.");
+                    setError("Không thể lấy địa chỉ.");
                 }
                 setLoading(false);
             },
             (err) => {
-                setError("Location access denied. Please enable location services.");
+                setError("Từ chối truy cập vị trí. Vui lòng bật dịch vụ định vị.");
                 setLoading(false);
             },
             { enableHighAccuracy: true }

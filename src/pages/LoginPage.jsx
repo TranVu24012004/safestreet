@@ -103,8 +103,8 @@ const LoginPage = () => {
           {/* Left: Login Form */}
           <div className="w-full md:w-1/2 p-10 md:p-12">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-              <p className="text-gray-600">Login to continue to your dashboard</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Chào mừng trở lại</h2>
+              <p className="text-gray-600">Đăng nhập để tiếp tục tới bảng điều khiển</p>
             </div>
 
             {/* Email & Password Form */}
@@ -120,7 +120,7 @@ const LoginPage = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="you@example.com"
+                    placeholder="ban@vi.du"
                     required
                   />
                 </div>
@@ -137,7 +137,7 @@ const LoginPage = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="Enter your password"
+                    placeholder="Nhập mật khẩu của bạn"
                     required
                   />
                   <button 
@@ -164,7 +164,7 @@ const LoginPage = () => {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
+                  Ghi nhớ đăng nhập
                 </label>
               </div>
 
@@ -186,12 +186,12 @@ const LoginPage = () => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Signing in...
+                    Đang đăng nhập...
                   </>
                 ) : (
                   <>
                     <LogIn size={18} className="mr-2" />
-                    Sign in
+                    Đăng nhập
                   </>
                 )}
               </button>
@@ -206,13 +206,13 @@ const LoginPage = () => {
             </div>
 
             <p className="text-sm text-gray-600 mt-8 text-center">
-              Don't have an account?{" "}
+              Chưa có tài khoản?{" "}
               <button
                 type="button"
                 className="text-blue-600 font-medium hover:text-blue-800 transition-colors"
                 onClick={() => navigate("/signup")}
               >
-                Sign up for free
+                Đăng ký miễn phí
               </button>
             </p>
           </div>

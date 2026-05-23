@@ -19,14 +19,14 @@ const Hero = () => {
         <h1 className="text-4xl md:text-5xl font-bold text-green-900">
           <br />
         
-          Smarter Roads Start with Smarter Inspections.
+          Đường phố thông minh bắt đầu từ kiểm tra thông minh.
         </h1>
         <p className="text-lg text-gray-600">
-          AI-driven damage detection and prioritization system to simplify road inspections and boost infrastructure safety.
+          Hệ thống phát hiện hư hỏng và ưu tiên sửa chữa bằng AI giúp đơn giản hóa kiểm tra đường và nâng cao an toàn cơ sở hạ tầng.
         </p>
        
       <StyledButton onClick={handleDemoClick}>
-        Start a demo
+        Bắt đầu demo
       </StyledButton>
       </div>
 

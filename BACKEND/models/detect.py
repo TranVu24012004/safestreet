@@ -36,8 +36,7 @@ start_time = time.time()
 
 # ======= Load YOLO model =======
 # Define the path to the pre-trained YOLO model weights
-# model_path = r'C:\Users\USER\tailwindsample\BACKEND\models\best.pt'
-model_path = r'/home/vu/Downloads/SafeStreet---Road-Damage-Detection-System/BACKEND/models/best.pt'
+model_path = r'/home/vu/Downloads/safestreet/BACKEND/models/best.pt'
 # Load the YOLO model with the specified weights
 yolo_model = YOLO(model_path)
 # Use half-precision (FP16) if GPU is available, otherwise use full precision (FP32)
@@ -63,7 +62,7 @@ vit_model.head = nn.Sequential(
 )
 # Load the pre-trained weights for our custom ViT model
 # map_location ensures the model loads correctly regardless of training device
-vit_model.load_state_dict(torch.load(r'/home/vu/Downloads/SafeStreet---Road-Damage-Detection-System/BACKEND/models/best_vit_multi_label.pth', map_location=device))
+vit_model.load_state_dict(torch.load(r'/home/vu/Downloads/safestreet/BACKEND/models/best_vit_multi_label.pth', map_location=device))
 # Move the model to the appropriate device (GPU/CPU)
 vit_model.to(device)
 # Set the model to evaluation mode - disables dropout and uses running stats for batch norm

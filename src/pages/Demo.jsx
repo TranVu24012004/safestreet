@@ -318,11 +318,11 @@ const Demo = () => {
             <div className="absolute -bottom-10 -right-10 w-20 h-20 bg-teal-400/10 rounded-full blur-xl"></div>
             
             <h1 className="text-5xl sm:text-6xl font-black text-center mb-6 bg-gradient-to-r from-green-600 via-emerald-500 to-teal-600 bg-clip-text text-transparent tracking-tight leading-tight">
-              Welcome to the Road Damage Detection Demo
+              Chào mừng đến với demo phát hiện hư hỏng đường
             </h1>
             
             <p className="text-center text-gray-600 max-w-3xl mx-auto text-lg font-light leading-relaxed">
-              Explore our interactive guide to learn how our platform helps identify and report road damage efficiently.
+              Khám phá hướng dẫn tương tác để tìm hiểu cách nền tảng của chúng tôi giúp xác định và báo cáo hư hỏng đường hiệu quả.
             </p>
             
             <div className="flex justify-center mt-8">
@@ -479,7 +479,7 @@ const Demo = () => {
                 <path d="M15 19L8 12L15 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <div className="text-sm font-medium text-gray-700">Swipe or use keyboard arrows to navigate</div>
+            <div className="text-sm font-medium text-gray-700">Vuốt hoặc dùng phím mũi tên để điều hướng</div>
             <div className="text-indigo-500 animate-pulse-slow" style={{ animationDelay: '0.5s' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 5L16 12L9 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -494,7 +494,7 @@ const Demo = () => {
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl text-white font-bold mr-4 shadow-lg transform rotate-3 hover:rotate-0 transition-transform">
               {currentSlide}
             </div>
-            <span className="mx-2 text-green-700/70">of</span>
+            <span className="mx-2 text-green-700/70">trong</span>
             <div className="flex items-center justify-center w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl text-green-700 font-bold ml-4 border-2 border-green-200/50 shadow-md">
               8
             </div>
@@ -506,11 +506,11 @@ const Demo = () => {
           <div className="inline-flex gap-5 text-sm text-gray-600 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-xl shadow-md">
             <span className="inline-flex items-center">
               <kbd className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg shadow-sm mr-2 font-mono">←</kbd>
-              Previous
+              Trước
             </span>
             <span className="inline-flex items-center">
               <kbd className="px-3 py-1.5 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg shadow-sm mr-2 font-mono">→</kbd>
-              Next
+              Tiếp
             </span>
           </div>
         </div>
