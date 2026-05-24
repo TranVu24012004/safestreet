@@ -1,48 +1,55 @@
-// Import necessary React and routing libraries
-import React, { useEffect } from "react";                          // Core React library with useEffect hook for side effects
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom"; // React Router for navigation
-import { ToastContainer, toast } from "react-toastify";            // Toast notifications library
-import "react-toastify/dist/ReactToastify.css";                    // Styles for toast notifications
-import { io } from "socket.io-client";                             // Socket.IO client for real-time communication
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { io } from "socket.io-client";
+import "leaflet/dist/leaflet.css";
 
-// Import all page components
-import Demo from "./pages/Demo";                                   // Demo page for showcasing features
-import Admin from "./pages/Admin";                                 // Admin dashboard for system management
-import Navbar from './components/Navbar';                          // Navigation bar component
-import Hero from './components/Hero';                              // Hero section for landing page
-import ViewFeed from './pages/ViewFeed';                           // Feed view for damage reports
-import Features from './components/Features';                      // Features showcase component
-import Testimonials from './components/Testimonials';              // User testimonials component
-import Footer from './components/Footer';                          // Footer component
-import SignupPage from './pages/SignupPage';                       // User registration page
-import LoginPage from './pages/LoginPage';                         // User login page
-import AboutUs from './pages/AboutUs';                             // About us information page
-import AuthorityPage from './pages/AuthorityPage';                 // Municipal authority dashboard
-import Upload from './pages/Upload';                               // Image upload and analysis page
-import User from './pages/user';                                   // User profile and dashboard
-import Contact from './pages/Contact';                             // Contact form page
-import Report from './pages/Report';                               // Damage reporting page
-import MapView from './pages/MapView';                             // Map visualization of damage reports
-import 'leaflet/dist/leaflet.css';                                 // CSS for Leaflet maps
+import Demo from "./pages/Demo";
+import Admin from "./pages/Admin";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import ViewFeed from "./pages/ViewFeed";
+import Features from "./components/Features";
+import Testimonials from "./components/Testimonials";
+import Footer from "./components/Footer";
+import SignupPage from "./pages/SignupPage";
+import LoginPage from "./pages/LoginPage";
+import AboutUs from "./pages/AboutUs";
+import AuthorityPage from "./pages/AuthorityPage";
+import Upload from "./pages/Upload";
+import User from "./pages/user";
+import Contact from "./pages/Contact";
+import Report from "./pages/Report";
+import MapView from "./pages/MapView";
 
-// Setup the WebSocket connection to the backend server
-const socket = io("http://localhost:5000");                        // Initialize Socket.IO connection
+const socket = io("http://localhost:5000");
 
-// HomePage component combines multiple components to create the landing page
 const HomePage = () => (
   <>
-    <Hero />                                                     
-    <Features />  
-    <Testimonials />                                                 
-    <Footer />                                                     
+    <Hero />
+    <Features />
+    <Testimonials />
+    <Footer />
   </>
 );
 
+const routesWithoutPublicNavbar = [
+  "/admin",
+  "/authority",
+  "/user",
+  "/upload",
+  "/report",
+  "/view",
+  "/map",
+];
+
 const LayoutWithNavbar = ({ children }) => {
   const location = useLocation();
-  // Khai báo các trang KHÔNG muốn hiện thanh Navbar phía trên
-  const hideNavbar = ["/admin", "/user", "/authority"].includes(location.pathname);
-  
+  const hideNavbar = routesWithoutPublicNavbar.some((routePrefix) =>
+    location.pathname.startsWith(routePrefix)
+  );
+
   return (
     <>
       {!hideNavbar && <Navbar />}
@@ -51,48 +58,41 @@ const LayoutWithNavbar = ({ children }) => {
   );
 };
 
-// Main App component that sets up routing and global notifications
 const App = () => {
-  // Set up WebSocket listeners when component mounts
   useEffect(() => {
-    // Listen for admin notifications about new uploads
     socket.on("admin-notification", (data) => {
-      // Display toast notification when new image is uploaded
-      toast.info(`New image uploaded: ${data.imagePath}`, {
-        icon: "🚧",                                                // Road work icon for notifications
-      });
+      toast.info(`New image uploaded: ${data.imagePath}`);
     });
 
-    // Clean up event listeners when component unmounts
     return () => {
-      socket.off("admin-notification");                            // Remove event listener
+      socket.off("admin-notification");
     };
-  }, []);                                                          // Empty dependency array means this runs once on mount
-  
+  }, []);
+
   return (
-  <Router>
-    <div className="bg-white text-gray-900">
-      <LayoutWithNavbar>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/user" element={<User />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/authority" element={<AuthorityPage />} />
-          <Route path="/report" element={<Report />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/view" element={<ViewFeed />} />
-          <Route path="/map" element={<MapView />} />
-          <Route path="/demo" element={<Demo />} />
-        </Routes>
-      </LayoutWithNavbar>
-      <ToastContainer position="bottom-right" autoClose={5000} theme="colored" />
-    </div>
-  </Router>
-);
+    <Router>
+      <div className="bg-white text-gray-900">
+        <LayoutWithNavbar>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/user" element={<User />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/upload" element={<Upload />} />
+            <Route path="/authority" element={<AuthorityPage />} />
+            <Route path="/report" element={<Report />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/view" element={<ViewFeed />} />
+            <Route path="/map" element={<MapView />} />
+            <Route path="/demo" element={<Demo />} />
+          </Routes>
+        </LayoutWithNavbar>
+        <ToastContainer position="bottom-right" autoClose={5000} theme="colored" />
+      </div>
+    </Router>
+  );
 };
 
-export default App;                                                // Export the App component as default
+export default App;

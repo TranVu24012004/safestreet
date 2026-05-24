@@ -51,19 +51,23 @@ const io = new Server(server, {               // Creates Socket.IO server with c
 
 // Middleware Configuration - Set up Express middleware for request handling
 
+const CORS_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"];
+const CORS_HEADERS = ["Content-Type", "Authorization", "X-Requested-With"];
+const corsOptions = {
+  origin: "*",
+  methods: CORS_METHODS,
+  credentials: true,
+  allowedHeaders: CORS_HEADERS,
+};
+
 // Configure CORS for Express
-app.use(cors({                                // Adds CORS middleware to Express
-  origin: '*',                                // Allows requests from any origin
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-  credentials: true,                          // Allows cookies to be sent
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] // Allowed headers
-}));
+app.use(cors(corsOptions));                   // Adds CORS middleware to Express
 
 // Add CORS headers to all responses
 app.use((req, res, next) => {                 // Custom middleware for additional CORS headers
   res.header('Access-Control-Allow-Origin', '*'); // Allows any origin
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Allowed methods
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With'); // Allowed headers
+  res.header('Access-Control-Allow-Methods', CORS_METHODS.join(', ')); // Allowed methods
+  res.header('Access-Control-Allow-Headers', CORS_HEADERS.join(', ')); // Allowed headers
   res.header('Access-Control-Allow-Credentials', 'true'); // Allows credentials
   
   // Handle preflight requests
